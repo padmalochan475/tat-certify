@@ -6,6 +6,7 @@ import {
   branchInputSchema,
   certificateRequestSchema,
   companyInputSchema,
+  googleAuthSettingsInputSchema,
   googleLoginSchema,
   durationPolicyInputSchema,
   studentInputSchema,
@@ -76,14 +77,12 @@ function getPasswordAdminConfig(env: Env) {
   };
 }
 
-function getGoogleConfig(env: Env) {
+function getGoogleDefaults(env: Env) {
   const clientId = env.GOOGLE_CLIENT_ID?.trim() ?? "";
-  const hostedDomain = (env.GOOGLE_ALLOWED_HD ?? "tat.ac.in").trim().toLowerCase();
-
   return {
-    enabled: Boolean(clientId),
     clientId,
-    hostedDomain
+    hostedDomain: (env.GOOGLE_ALLOWED_HD ?? "tat.ac.in").trim().toLowerCase(),
+    enabled: Boolean(clientId)
   };
 }
 
@@ -271,12 +270,13 @@ async function getGoogleJwks(): Promise<GoogleJwk[]> {
 
 async function verifyGoogleCredential(
   env: Env,
+  service: TatCertificateService,
   credential: string
 ): Promise<{ sub: string; username: string }> {
-  const googleConfig = getGoogleConfig(env);
+  const googleConfig = await service.getGoogleAuthSettings(getGoogleDefaults(env));
 
   if (!googleConfig.enabled) {
-    throw new AppError(400, "Google login is not enabled");
+    throw new AppError(400, "Google login is not configured");
   }
 
   const parts = credential.split(".");
@@ -403,8 +403,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       }
 
       if (method === "GET" && segments[1] === "google" && segments[2] === "config") {
-        const googleConfig = getGoogleConfig(context.env);
-        return jsonResponse(googleConfig);
+        return jsonResponse(await service.getGoogleAuthSettings(getGoogleDefaults(context.env)));
       }
 
       if (method === "POST" && segments[1] === "login") {
@@ -442,7 +441,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
       if (method === "POST" && segments[1] === "google-login") {
         const payload = googleLoginSchema.parse(await readJson(request));
-        const account = await verifyGoogleCredential(context.env, payload.credential);
+        const account = await verifyGoogleCredential(context.env, service, payload.credential);
         const adminUser = await service.requestGoogleAdminAccess(account.username, account.sub);
 
         if (adminUser.status !== "Approved") {
@@ -501,7 +500,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       };
 
       if (method === "GET" && segments[1] === "bootstrap") {
-        return jsonResponse(await service.getAdminBootstrap());
+        return jsonResponse(await service.getAdminBootstrap(getGoogleDefaults(context.env)));
+      }
+
+      if (method === "POST" && segments[1] === "google" && segments[2] === "settings") {
+        const payload = googleAuthSettingsInputSchema.parse(await readJson(request));
+        const googleConfig = await service.saveGoogleAuthSettings(
+          payload,
+          getGoogleDefaults(context.env)
+        );
+        await service.writeAuditLog(actor, "google.settings.save", "system_state", "google_signin", {
+          enabled: googleConfig.enabled,
+          hostedDomain: googleConfig.hostedDomain,
+          hasClientId: Boolean(googleConfig.clientId)
+        });
+        return jsonResponse(googleConfig);
       }
 
       if (method === "PATCH" && segments[1] === "students" && segments[3] === "approve") {

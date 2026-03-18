@@ -73,6 +73,10 @@ const tableDefinitions: Record<string, { key: string; columns: string[] }> = {
       "created_at"
     ]
   },
+  system_state: {
+    key: "key",
+    columns: ["key", "value", "updated_at"]
+  },
   certificate_log: {
     key: "ref_no",
     columns: ["ref_no", "student_id", "template_id", "generated_on", "academic_year"]

@@ -11,6 +11,8 @@ import type {
   CompanyRecord,
   DurationPolicyInput,
   DurationPolicyRecord,
+  GoogleAuthSettings,
+  GoogleAuthSettingsInput,
   StudentInput,
   StudentRecord,
   TemplateInput,
@@ -37,6 +39,7 @@ export interface StudentBootstrapPayload {
 export interface AdminBootstrapPayload extends StudentBootstrapPayload {
   adminUsers: AdminUserRecord[];
   auditLog: AuditLogRecord[];
+  googleConfig: GoogleAuthSettings;
   students: StudentRecord[];
   templates: TemplateRecord[];
   certificateLog: Array<{
@@ -149,6 +152,10 @@ function normalizeAuditLog(record: RowRecord): AuditLogRecord {
   };
 }
 
+function normalizeHostedDomain(value: string): string {
+  return value.trim().toLowerCase();
+}
+
 function formatShortDate(date: Date): string {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -230,7 +237,77 @@ export class TatCertificateService {
     };
   }
 
-  async getAdminBootstrap(): Promise<AdminBootstrapPayload> {
+  async getGoogleAuthSettings(
+    defaults: Partial<GoogleAuthSettings> = {}
+  ): Promise<GoogleAuthSettings> {
+    const records = await runQuery<{ key: string; value: string }>(
+      this.db,
+      `SELECT key, value FROM system_state
+       WHERE key IN (?, ?, ?)`,
+      ["google_signin_enabled", "google_client_id", "google_allowed_hd"]
+    );
+    const settings = new Map(records.map((record) => [record.key, record.value]));
+    const clientId = (settings.get("google_client_id") ?? defaults.clientId ?? "").trim();
+    const hostedDomain = normalizeHostedDomain(
+      settings.get("google_allowed_hd") ?? defaults.hostedDomain ?? "tat.ac.in"
+    );
+    const enabledSetting = settings.get("google_signin_enabled");
+    const enabledBySetting =
+      enabledSetting === undefined ? defaults.enabled ?? Boolean(clientId) : enabledSetting === "1";
+
+    return {
+      enabled: Boolean(clientId) && enabledBySetting,
+      clientId,
+      hostedDomain
+    };
+  }
+
+  async saveGoogleAuthSettings(
+    input: GoogleAuthSettingsInput,
+    defaults: Partial<GoogleAuthSettings> = {}
+  ): Promise<GoogleAuthSettings> {
+    const clientId = input.client_id.trim();
+    const hostedDomain = normalizeHostedDomain(input.allowed_domain || defaults.hostedDomain || "tat.ac.in");
+    const enabled = input.enabled && Boolean(clientId);
+    const updatedAt = new Date().toISOString();
+
+    await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO system_state (key, value, updated_at)
+           VALUES (?, ?, ?)
+           ON CONFLICT(key) DO UPDATE SET
+             value = excluded.value,
+             updated_at = excluded.updated_at`
+        )
+        .bind("google_client_id", clientId, updatedAt),
+      this.db
+        .prepare(
+          `INSERT INTO system_state (key, value, updated_at)
+           VALUES (?, ?, ?)
+           ON CONFLICT(key) DO UPDATE SET
+             value = excluded.value,
+             updated_at = excluded.updated_at`
+        )
+        .bind("google_allowed_hd", hostedDomain, updatedAt),
+      this.db
+        .prepare(
+          `INSERT INTO system_state (key, value, updated_at)
+           VALUES (?, ?, ?)
+           ON CONFLICT(key) DO UPDATE SET
+             value = excluded.value,
+             updated_at = excluded.updated_at`
+        )
+        .bind("google_signin_enabled", enabled ? "1" : "0", updatedAt)
+    ]);
+
+    return this.getGoogleAuthSettings(defaults);
+  }
+
+  async getAdminBootstrap(
+    googleDefaults: Partial<GoogleAuthSettings> = {}
+  ): Promise<AdminBootstrapPayload> {
+    const googleConfigPromise = this.getGoogleAuthSettings(googleDefaults);
     const [
       adminUsersResult,
       auditLogResult,
@@ -267,10 +344,12 @@ export class TatCertificateService {
          ORDER BY datetime(l.generated_on) DESC`
       )
     ]);
+    const googleConfig = await googleConfigPromise;
 
     return {
       adminUsers: adminUsersResult.results.map((record) => normalizeAdminUser(record as RowRecord)),
       auditLog: auditLogResult.results.map((record) => normalizeAuditLog(record as RowRecord)),
+      googleConfig,
       students: studentsResult.results.map((record) => normalizeStudent(record as RowRecord)),
       branches: branchesResult.results.map((record) => normalizeBranch(record as RowRecord)),
       companies: companiesResult.results.map((record) => normalizeCompany(record as RowRecord)),

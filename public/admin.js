@@ -18,6 +18,8 @@ const elements = {
   googleLoginPanel: document.querySelector("#google-login-panel"),
   googleLoginButton: document.querySelector("#google-login-button"),
   googleLoginNote: document.querySelector("#google-login-note"),
+  googleSettingsForm: document.querySelector("#google-settings-form"),
+  googleSettingsStatus: document.querySelector("#google-settings-status"),
   dashboard: document.querySelector("#dashboard"),
   refreshButton: document.querySelector("#refresh-admin"),
   logoutButton: document.querySelector("#logout-button"),
@@ -139,6 +141,19 @@ function toggleAuthenticated(isAuthenticated) {
   elements.dashboard.classList.toggle("hidden", !isAuthenticated)
 }
 
+function renderGoogleSettings() {
+  if (!elements.googleSettingsForm || !elements.googleSettingsStatus || !state.googleConfig) {
+    return
+  }
+
+  elements.googleSettingsForm.elements.enabled.checked = state.googleConfig.enabled
+  elements.googleSettingsForm.elements.client_id.value = state.googleConfig.clientId
+  elements.googleSettingsForm.elements.allowed_domain.value = state.googleConfig.hostedDomain
+  elements.googleSettingsStatus.textContent = state.googleConfig.enabled
+    ? `Enabled for ${state.googleConfig.hostedDomain}`
+    : "Google Sign-In is not configured yet."
+}
+
 async function handleGoogleCredential(response) {
   if (!response?.credential) {
     throw new Error("Google login did not return a credential")
@@ -160,14 +175,19 @@ async function handleGoogleCredential(response) {
 async function loadGoogleLogin() {
   const config = await request("/api/admin/google/config")
   state.googleConfig = config
+  elements.googleLoginPanel.classList.remove("hidden")
+  elements.googleLoginButton.innerHTML = ""
 
   if (!config.enabled) {
-    elements.googleLoginPanel.classList.add("hidden")
+    elements.googleLoginNote.textContent =
+      "Google Workspace sign-in is not configured yet. An existing admin can enable it from the Access panel after password login."
+    elements.googleLoginButton.innerHTML =
+      '<button type="button" class="button ghost" disabled>Google Sign-In Not Configured</button>'
+    renderGoogleSettings()
     return
   }
 
   elements.googleLoginNote.textContent = `Sign in with your ${config.hostedDomain} Google Workspace account. First use creates an approval request for an existing admin.`
-  elements.googleLoginPanel.classList.remove("hidden")
 
   const google = await loadGoogleIdentityScript()
   google.accounts.id.initialize({
@@ -183,6 +203,7 @@ async function loadGoogleLogin() {
     text: "continue_with",
     width: 320
   })
+  renderGoogleSettings()
 }
 
 function renderRequests() {
@@ -470,6 +491,7 @@ async function loadBootstrap() {
 
   state.adminUsers = data.adminUsers
   state.auditLog = data.auditLog
+  state.googleConfig = data.googleConfig
   state.students = data.students
   state.branches = data.branches
   state.companies = data.companies
@@ -480,6 +502,7 @@ async function loadBootstrap() {
 
   renderRequests()
   renderGoogleUsers()
+  renderGoogleSettings()
   populateGenerator(selectedStudentId, selectedTemplateId)
   renderMasterLists()
   renderLogs()
@@ -569,6 +592,25 @@ async function handleGoogleUserAction(event) {
     showFlash("Google sign-in request removed.", "info")
     await loadBootstrap()
   }
+}
+
+async function handleGoogleSettingsSubmit(event) {
+  event.preventDefault()
+  const formData = new FormData(elements.googleSettingsForm)
+  const payload = {
+    enabled: formData.get("enabled") === "on",
+    client_id: String(formData.get("client_id") || "").trim(),
+    allowed_domain: String(formData.get("allowed_domain") || "").trim()
+  }
+  const result = await request("/api/admin/google/settings", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  })
+
+  state.googleConfig = result
+  renderGoogleSettings()
+  await loadGoogleLogin()
+  showFlash("Google sign-in settings saved.", "success")
 }
 
 async function handleListAction(event) {
@@ -724,6 +766,9 @@ elements.requestsBody.addEventListener("click", (event) =>
 )
 elements.googleUsersBody.addEventListener("click", (event) =>
   handleGoogleUserAction(event).catch((error) => showFlash(error.message, "error"))
+)
+elements.googleSettingsForm?.addEventListener("submit", (event) =>
+  handleGoogleSettingsSubmit(event).catch((error) => showFlash(error.message, "error"))
 )
 elements.branchList.addEventListener("click", (event) =>
   handleListAction(event).catch((error) => showFlash(error.message, "error"))

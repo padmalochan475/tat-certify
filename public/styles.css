@@ -373,6 +373,13 @@ textarea[readonly] {
   justify-content: flex-start;
 }
 
+.google-login-button .button[disabled] {
+  width: min(320px, 100%);
+  justify-content: center;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .login-divider {
   position: relative;
   margin: 18px 0 14px;
@@ -447,6 +454,10 @@ table strong {
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 18px;
+}
+
+.access-settings-grid {
+  margin: 0 0 18px;
 }
 
 table {
