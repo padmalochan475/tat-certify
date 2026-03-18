@@ -85,23 +85,6 @@ export const googleLoginSchema = z
   })
   .strict();
 
-export const googleAuthSettingsInputSchema = z
-  .object({
-    enabled: z.boolean().default(false),
-    client_id: z.string().trim().max(255).default(""),
-    allowed_domain: z.string().trim().min(3).max(120).default("tat.ac.in")
-  })
-  .strict()
-  .superRefine((value, context) => {
-    if (value.enabled && !value.client_id) {
-      context.addIssue({
-        code: "custom",
-        message: "Google Client ID is required when Google Sign-In is enabled",
-        path: ["client_id"]
-      });
-    }
-  });
-
 export const templateUpdateSchema = templateInputSchema.partial().strict();
 export const certificateRequestSchema = z
   .object({
@@ -120,7 +103,6 @@ export type CompanyInput = z.infer<typeof companyInputSchema>;
 export type DurationPolicyInput = z.infer<typeof durationPolicyInputSchema>;
 export type AcademicSessionInput = z.infer<typeof academicSessionInputSchema>;
 export type TemplateInput = z.infer<typeof templateInputSchema>;
-export type GoogleAuthSettingsInput = z.infer<typeof googleAuthSettingsInputSchema>;
 
 export interface StudentRecord extends StudentInput {
   id: string;
@@ -185,10 +167,4 @@ export interface AuditLogRecord {
   target_id: string;
   details: string | null;
   created_at: string;
-}
-
-export interface GoogleAuthSettings {
-  enabled: boolean;
-  clientId: string;
-  hostedDomain: string;
 }

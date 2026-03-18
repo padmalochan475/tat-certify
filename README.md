@@ -15,7 +15,7 @@ Dynamic certificate request and generation system for Trident Academy of Technol
 - Academic year engine
 - Certificate log tracking
 - Cloudflare D1-backed CRUD architecture with strict validation
-- Optional Google Workspace admin sign-in restricted to `tat.ac.in`, with admin approval workflow and admin-managed settings
+- Optional Google Workspace admin sign-in restricted to `tat.ac.in`, with admin approval workflow
 - Audit log for login, approval, rejection, and certificate generation actions
 
 ## Stack
@@ -46,11 +46,9 @@ copy .dev.vars.example .dev.vars
 ```
 
 3. Edit `.dev.vars` and set your own local admin credentials and secret.
-   Optional fallback values:
-   - `GOOGLE_CLIENT_ID` for Google Sign-In bootstrap
+   Optional backend values:
+   - `GOOGLE_CLIENT_ID` for Google Sign-In
    - `GOOGLE_ALLOWED_HD=tat.ac.in` to restrict Google login to your Workspace domain
-
-   You can also configure Google Sign-In later from the admin dashboard in the Access panel. If Google is not configured, the login page now shows a clear status message instead of hiding the section.
 
 4. Start the Pages dev server:
 
@@ -111,8 +109,8 @@ npx wrangler pages deploy public --project-name tat-certify --branch main
    - `ADMIN_USERNAME`
    - `ADMIN_PASSWORD`
    - `ADMIN_SECRET`
-   - `GOOGLE_CLIENT_ID` (optional fallback)
-   - `GOOGLE_ALLOWED_HD` (optional fallback, defaults to `tat.ac.in`)
+   - `GOOGLE_CLIENT_ID` (optional)
+   - `GOOGLE_ALLOWED_HD` (optional, defaults to `tat.ac.in`)
 5. In GitHub repository settings, add Actions secrets:
    - `CLOUDFLARE_API_TOKEN`
    - `CLOUDFLARE_ACCOUNT_ID`
