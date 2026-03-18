@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Form | TAT Certificate System</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="/">TAT Certificate System</a>
+        <nav class="topnav">
+          <a href="/student" class="active">Student Form</a>
+          <a href="/admin">Admin Login</a>
+        </nav>
+      </header>
+
+      <section class="hero page-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Student Portal</p>
+          <h1>Submit your certificate request.</h1>
+          <p class="hero-text">
+            Select a company from the approved directory or add a new one. New company details can
+            become part of the future directory after admin approval.
+          </p>
+        </div>
+      </section>
+
+      <div id="student-flash" class="flash" hidden></div>
+
+      <main class="page-grid">
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <p class="section-tag">Form Link</p>
+              <h2>Certificate Request Form</h2>
+            </div>
+            <span class="chip">Student view</span>
+          </div>
+
+          <form id="student-form" class="form-grid">
+            <label>
+              Full name
+              <input name="full_name" type="text" placeholder="Priyanshu Ranjan Das" required />
+            </label>
+
+            <label>
+              Registration number
+              <input name="reg_no" type="text" placeholder="2301289277" required />
+            </label>
+
+            <label>
+              Branch
+              <select id="student-branch" name="branch" required></select>
+            </label>
+
+            <label>
+              Year
+              <select name="year" required>
+                <option value="">Select year</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+            </label>
+
+            <label>
+              Academic session
+              <select id="student-session" name="session" required></select>
+            </label>
+
+            <label>
+              Certificate type
+              <select id="student-cert-type" name="cert_type" required>
+                <option value="Internship">Internship</option>
+                <option value="Apprenticeship">Apprenticeship</option>
+              </select>
+            </label>
+
+            <label class="full-span">
+              Company directory
+              <select id="student-company-directory">
+                <option value="">Select from approved companies</option>
+                <option value="__manual__">Other / New Company</option>
+              </select>
+            </label>
+
+            <label>
+              Company name
+              <input id="student-company-name" name="company" type="text" placeholder="TPCODL" required />
+            </label>
+
+            <label>
+              HR title
+              <input
+                id="student-company-hr"
+                name="company_hr_title"
+                type="text"
+                placeholder="Head HR"
+                required
+              />
+            </label>
+
+            <label class="full-span">
+              Company HR address
+              <textarea
+                id="student-company-address"
+                name="company_address"
+                rows="4"
+                placeholder="Corporate Office&#10;Power House Square&#10;Bhubaneswar"
+                required
+              ></textarea>
+            </label>
+
+            <label>
+              Duration
+              <select id="student-duration" name="duration" required></select>
+            </label>
+
+            <label>
+              Start date
+              <input name="start_date" type="date" required />
+            </label>
+
+            <div class="form-actions full-span">
+              <button type="submit" class="button primary">Submit Request</button>
+            </div>
+          </form>
+        </section>
+
+        <aside class="card side-card">
+          <div class="card-head">
+            <div>
+              <p class="section-tag">Directory Preview</p>
+              <h2>Company details</h2>
+            </div>
+          </div>
+
+          <div id="company-preview" class="preview-card">
+            <p class="muted">Select a company to preview its HR title and address here.</p>
+          </div>
+
+          <div class="info-block">
+            <h3>How it works</h3>
+            <p>1. Student fills the form from this link.</p>
+            <p>2. Admin logs in, reviews, approves or removes the request.</p>
+            <p>3. Approved new company details become part of the company panel for future use.</p>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="/student.js"></script>
+  </body>
+</html>

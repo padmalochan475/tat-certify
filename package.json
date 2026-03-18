@@ -1,0 +1,22 @@
+{
+  "name": "tat-certificate-system",
+  "version": "1.0.0",
+  "description": "Dynamic TAT internship and apprenticeship certificate system",
+  "scripts": {
+    "dev": "wrangler pages dev",
+    "build": "npm run check",
+    "deploy": "wrangler pages deploy",
+    "check": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "wrangler": "^4.12.0"
+  }
+}

@@ -1,0 +1,10 @@
+name = "tat-certificate-system"
+compatibility_date = "2026-03-18"
+pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tat-certificate-db"
+database_id = "00000000-0000-0000-0000-000000000000"
+preview_database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
