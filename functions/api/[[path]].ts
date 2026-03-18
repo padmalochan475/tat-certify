@@ -24,10 +24,14 @@ const adminCookieName = "tat_admin_session";
 const encoder = new TextEncoder();
 
 function getAdminConfig(env: Env) {
+  if (!env.ADMIN_USERNAME || !env.ADMIN_PASSWORD || !env.ADMIN_SECRET) {
+    throw new AppError(500, "Admin credentials are not configured");
+  }
+
   return {
-    username: env.ADMIN_USERNAME ?? "admin",
-    password: env.ADMIN_PASSWORD ?? "tatadmin123",
-    secret: env.ADMIN_SECRET ?? "tat-certificate-dev-secret"
+    username: env.ADMIN_USERNAME,
+    password: env.ADMIN_PASSWORD,
+    secret: env.ADMIN_SECRET
   };
 }
 

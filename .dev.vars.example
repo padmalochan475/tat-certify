@@ -1,3 +1,3 @@
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=tatadmin123
-ADMIN_SECRET=replace-with-a-long-random-secret
+ADMIN_USERNAME=your-admin-username
+ADMIN_PASSWORD=your-strong-admin-password
+ADMIN_SECRET=generate-a-long-random-secret

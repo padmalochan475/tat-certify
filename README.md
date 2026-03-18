@@ -43,18 +43,15 @@ npm install
 copy .dev.vars.example .dev.vars
 ```
 
-3. Start the Pages dev server:
+3. Edit `.dev.vars` and set your own local admin credentials and secret.
+
+4. Start the Pages dev server:
 
 ```bash
 npm run dev
 ```
 
 The site runs through `wrangler pages dev`, which serves the static assets in `public/` and the API Functions in `functions/`.
-
-Default admin login for local development:
-
-- Username: `admin`
-- Password: `tatadmin123`
 
 ## Cloudflare D1 setup
 
