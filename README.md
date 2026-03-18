@@ -90,24 +90,27 @@ The app also auto-creates missing tables and seeds default master data on first 
 
 ## GitHub -> Cloudflare deployment
 
-1. Create an empty GitHub repository.
-2. Add it as the Git remote and push this project:
+1. Create the Pages project:
 
 ```bash
-git remote add origin <YOUR_GITHUB_REPO_URL>
-git add .
-git commit -m "Initial Cloudflare Pages + D1 setup"
-git push -u origin main
+npx wrangler pages project create tat-certify --production-branch main
 ```
 
-3. In Cloudflare, create a new Pages project and connect the GitHub repo.
-4. Set the build output directory to `public`.
-5. Add the D1 binding named `DB` to the Pages project.
-6. Add production environment variables:
+2. Create the first deployment:
+
+```bash
+npx wrangler pages deploy public --project-name tat-certify --branch main
+```
+
+3. In Cloudflare Pages, add the D1 binding named `DB` to the `tat-certify` project.
+4. Add production environment variables:
    - `ADMIN_USERNAME`
    - `ADMIN_PASSWORD`
    - `ADMIN_SECRET`
-7. Deploy.
+5. In GitHub repository settings, add Actions secrets:
+   - `CLOUDFLARE_API_TOKEN`
+   - `CLOUDFLARE_ACCOUNT_ID`
+6. Push to `main` and GitHub Actions will deploy automatically using [deploy-pages.yml](D:/Projects/Internship-Projects/.github/workflows/deploy-pages.yml).
 
 Expected public URLs:
 
@@ -121,6 +124,7 @@ Expected public URLs:
 npm run check
 npm run dev
 npm run deploy
+npx wrangler pages deploy public --project-name tat-certify --branch main
 ```
 
 ## Important paths
