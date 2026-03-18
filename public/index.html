@@ -4,50 +4,144 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TAT Certificate System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <div class="shell">
-      <header class="topbar">
-        <a class="brand" href="/">TAT Certificate System</a>
+      <header class="topbar" data-reveal>
+        <a class="brand" href="/">
+          <span class="brand-mark">TAT</span>
+          <span class="brand-copy">
+            <strong>Certificate System</strong>
+            <small>Trident Academy of Technology</small>
+          </span>
+        </a>
+
         <nav class="topnav">
           <a href="/student">Student Form</a>
           <a href="/admin">Admin Login</a>
         </nav>
       </header>
 
-      <section class="hero landing-hero">
+      <section class="hero landing-hero" data-reveal>
         <div class="hero-copy">
-          <p class="eyebrow">Trident Academy of Technology</p>
-          <h1>Dynamic internship and apprenticeship certificate workflow.</h1>
+          <p class="eyebrow">Institutional Workflow Platform</p>
+          <h1>Precision-built certificate operations for a modern academic office.</h1>
           <p class="hero-text">
-            Students submit a clean request form. Admin reviews, approves or removes requests,
-            manages master data, and generates print-ready certificates with tracked references.
+            One controlled environment for student submissions, branch-level serial logic, company
+            records, approval workflows, Google-restricted admin access, and one-page certificate
+            output ready for official letterhead.
           </p>
+
+          <div class="hero-actions">
+            <a class="button primary" href="/student">Start Student Request</a>
+            <a class="button ghost" href="/admin">Open Admin Workspace</a>
+          </div>
+
+          <div class="hero-stat-row">
+            <article class="metric-card">
+              <span class="metric-value">Dynamic</span>
+              <p>Templates, durations, HOD details, and companies stay admin-managed.</p>
+            </article>
+            <article class="metric-card">
+              <span class="metric-value">Tracked</span>
+              <p>Reference generation, approvals, removals, and certificate logs stay auditable.</p>
+            </article>
+            <article class="metric-card">
+              <span class="metric-value">Ready</span>
+              <p>Built for GitHub, Cloudflare Pages, and D1 with a production-minded structure.</p>
+            </article>
+          </div>
         </div>
 
-        <div class="hero-note">
-          <p class="hero-note-label">Dynamic logic</p>
-          <p>
-            Company directory, HR address details, HOD details, templates, and academic-session
-            options are all managed from the admin side.
-          </p>
-        </div>
+        <aside class="hero-panel">
+          <p class="section-tag">Operational Spine</p>
+          <h2>Internal workflow, external polish.</h2>
+          <div class="signal-stack">
+            <article class="signal-item">
+              <span class="signal-index">01</span>
+              <div>
+                <strong>Student Intake</strong>
+                <p>Clean guided submission with approved company reuse and manual fallback.</p>
+              </div>
+            </article>
+            <article class="signal-item">
+              <span class="signal-index">02</span>
+              <div>
+                <strong>Admin Control</strong>
+                <p>Approve, reject, manage sessions, branches, HOD records, templates, and logs.</p>
+              </div>
+            </article>
+            <article class="signal-item">
+              <span class="signal-index">03</span>
+              <div>
+                <strong>Print Output</strong>
+                <p>One-page certificate composition aligned to your institutional letterhead.</p>
+              </div>
+            </article>
+          </div>
+        </aside>
       </section>
 
-      <section class="link-grid">
-        <a class="link-card" href="/student">
+      <section class="workflow-strip" data-reveal>
+        <article class="workflow-card">
+          <span>Submit</span>
+          <p>Students enter request details with department, session, type, company, and duration.</p>
+        </article>
+        <article class="workflow-card">
+          <span>Review</span>
+          <p>Admins evaluate requests, remove invalid ones, and approve valid submissions.</p>
+        </article>
+        <article class="workflow-card">
+          <span>Generate</span>
+          <p>Reference numbers, templates, issue date, and print preview stay centrally controlled.</p>
+        </article>
+        <article class="workflow-card">
+          <span>Audit</span>
+          <p>Every generation and admin action remains visible in the operational record.</p>
+        </article>
+      </section>
+
+      <section class="link-grid" data-reveal>
+        <a class="link-card portal-card" href="/student">
           <p class="section-tag">Student Portal</p>
-          <h2>Fill the request form</h2>
-          <p>Choose an existing company or enter a new company with HR title and address.</p>
+          <h2>Submit a request without friction</h2>
+          <p>
+            Guided form sections, company directory assistance, and structured inputs for a cleaner
+            admin review pipeline.
+          </p>
+          <span class="card-link">Open student form</span>
         </a>
 
-        <a class="link-card dark" href="/admin">
+        <a class="link-card portal-card dark" href="/admin">
           <p class="section-tag">Admin Workspace</p>
-          <h2>Login and manage requests</h2>
-          <p>Approve or remove requests, manage company data, and generate certificates.</p>
+          <h2>Run the certificate desk like an operations console</h2>
+          <p>
+            Handle approvals, data governance, template control, Google sign-in access, and print
+            generation from one internal dashboard.
+          </p>
+          <span class="card-link">Open admin workspace</span>
         </a>
+
+        <section class="link-card insight-card">
+          <p class="section-tag">System Fit</p>
+          <h2>Built for organizational continuity</h2>
+          <ul class="feature-list">
+            <li>Department-wise serial progression with manual starting offsets</li>
+            <li>Reusable company intelligence captured from approved requests</li>
+            <li>Admin-only certificate generation with audit visibility</li>
+            <li>Cloud-hosted deployment path without paid infrastructure lock-in</li>
+          </ul>
+        </section>
       </section>
     </div>
+
+    <script type="module" src="/site.js"></script>
   </body>
 </html>

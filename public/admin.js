@@ -137,6 +137,9 @@ function formatDateTime(value) {
 function toggleAuthenticated(isAuthenticated) {
   elements.loginCard.classList.toggle("hidden", isAuthenticated)
   elements.dashboard.classList.toggle("hidden", !isAuthenticated)
+  window.requestAnimationFrame(() => {
+    document.dispatchEvent(new Event("ui:refresh-reveal"))
+  })
 }
 
 async function handleGoogleCredential(response) {

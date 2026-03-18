@@ -4,83 +4,151 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin | TAT Certificate System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <div class="shell">
-      <header class="topbar">
-        <a class="brand" href="/">TAT Certificate System</a>
+      <header class="topbar" data-reveal>
+        <a class="brand" href="/">
+          <span class="brand-mark">TAT</span>
+          <span class="brand-copy">
+            <strong>Certificate System</strong>
+            <small>Trident Academy of Technology</small>
+          </span>
+        </a>
+
         <nav class="topnav">
           <a href="/student">Student Form</a>
           <a href="/admin" class="active">Admin Login</a>
         </nav>
       </header>
 
-      <section class="hero page-hero">
+      <section class="hero page-hero admin-hero" data-reveal>
         <div class="hero-copy">
-          <p class="eyebrow">Admin Workspace</p>
-          <h1>Manage requests, master data, and certificate generation.</h1>
+          <p class="eyebrow">Operations Console</p>
+          <h1>Manage approvals, data governance, and certificate generation from one workspace.</h1>
           <p class="hero-text">
-            Company details, HOD details, academic sessions, templates, and certificate generation
-            are handled here after admin login.
+            This is the internal control surface for requests, templates, branches, companies,
+            Google sign-in approvals, and audit visibility.
           </p>
+          <div class="hero-actions">
+            <span class="chip accent">Admin controlled</span>
+            <span class="chip">Audit visible</span>
+            <span class="chip">Print workflow ready</span>
+          </div>
         </div>
+
+        <aside class="hero-panel">
+          <p class="section-tag">Control Layers</p>
+          <div class="signal-stack">
+            <article class="signal-item">
+              <span class="signal-index">01</span>
+              <div>
+                <strong>Approval Gate</strong>
+                <p>Only reviewed student requests move into generation-ready state.</p>
+              </div>
+            </article>
+            <article class="signal-item">
+              <span class="signal-index">02</span>
+              <div>
+                <strong>Master Data</strong>
+                <p>Branches, HOD data, sessions, companies, durations, and templates stay centralized.</p>
+              </div>
+            </article>
+            <article class="signal-item">
+              <span class="signal-index">03</span>
+              <div>
+                <strong>Access Trace</strong>
+                <p>Google sign-in requests and admin activity remain visible to the office.</p>
+              </div>
+            </article>
+          </div>
+        </aside>
       </section>
 
       <div id="admin-flash" class="flash" hidden></div>
 
-      <section id="login-card" class="card login-card">
-        <div class="card-head">
-          <div>
-            <p class="section-tag">Restricted</p>
-            <h2>Admin Login</h2>
+      <main class="login-layout">
+        <section id="login-card" class="card login-card" data-reveal>
+          <div class="card-head">
+            <div class="card-copy">
+              <p class="section-tag">Restricted Access</p>
+              <h2>Admin Login</h2>
+              <p class="card-text">
+                Use password login or, when enabled in backend configuration, sign in with your
+                approved `tat.ac.in` Google Workspace account.
+              </p>
+            </div>
+            <span class="chip">Protected</span>
           </div>
-          <span class="chip">Protected</span>
-        </div>
 
-        <form id="login-form" class="login-form">
-          <label>
-            Username
-            <input name="username" type="text" placeholder="admin" required />
-          </label>
+          <form id="login-form" class="login-form">
+            <label>
+              Username
+              <input name="username" type="text" placeholder="admin" required />
+            </label>
 
-          <label>
-            Password
-            <input name="password" type="password" placeholder="Enter admin password" required />
-          </label>
+            <label>
+              Password
+              <input name="password" type="password" placeholder="Enter admin password" required />
+            </label>
 
-          <div class="form-actions">
-            <button type="submit" class="button primary">Login</button>
+            <div class="form-actions">
+              <button type="submit" class="button primary">Login</button>
+            </div>
+          </form>
+
+          <div id="google-login-panel" class="google-login-panel">
+            <div class="login-divider">
+              <span>or</span>
+            </div>
+            <p id="google-login-note" class="muted">
+              Checking Google Workspace sign-in availability...
+            </p>
+            <div id="google-login-button" class="google-login-button"></div>
           </div>
-        </form>
+        </section>
 
-        <div id="google-login-panel" class="google-login-panel">
-          <div class="login-divider">
-            <span>or</span>
-          </div>
-          <p id="google-login-note" class="muted">
-            Checking Google Workspace sign-in availability...
-          </p>
-          <div id="google-login-button" class="google-login-button"></div>
-        </div>
-      </section>
+        <aside class="card security-card" data-reveal>
+          <p class="section-tag">Workspace Notes</p>
+          <h2>Internal access is designed to stay controlled, not open.</h2>
+          <ul class="feature-list compact">
+            <li>Password login remains the primary recovery path for the office.</li>
+            <li>Google users require both `tat.ac.in` domain restriction and admin approval.</li>
+            <li>Generated certificates, approvals, and removals are written to the audit trail.</li>
+            <li>Preview and print controls remain available only after authentication.</li>
+          </ul>
+        </aside>
+      </main>
 
       <section id="dashboard" class="hidden">
-        <div class="card-head admin-toolbar">
-          <div>
-            <p class="section-tag">Logged In</p>
-            <h2>Admin Dashboard</h2>
-          </div>
-          <div class="form-actions">
-            <button id="refresh-admin" type="button" class="button ghost">Refresh Data</button>
-            <button id="logout-button" type="button" class="button secondary">Logout</button>
+        <div class="dashboard-header card" data-reveal>
+          <div class="card-head admin-toolbar">
+            <div class="card-copy">
+              <p class="section-tag">Logged In</p>
+              <h2>Admin Dashboard</h2>
+              <p class="card-text">
+                Operate the certificate workflow, maintain master data, and review the complete
+                activity trail from one coordinated workspace.
+              </p>
+            </div>
+            <div class="form-actions">
+              <button id="refresh-admin" type="button" class="button ghost">Refresh Data</button>
+              <button id="logout-button" type="button" class="button secondary">Logout</button>
+            </div>
           </div>
         </div>
 
         <main class="admin-layout">
-          <section class="card">
+          <section class="card card--wide" data-reveal>
             <div class="card-head">
-              <div>
+              <div class="card-copy">
                 <p class="section-tag">Requests</p>
                 <h2>Student Submissions</h2>
               </div>
@@ -103,9 +171,9 @@
             </div>
           </section>
 
-          <section class="card">
+          <section class="card" data-reveal>
             <div class="card-head">
-              <div>
+              <div class="card-copy">
                 <p class="section-tag">Generate</p>
                 <h2>Certificate Preview</h2>
               </div>
@@ -138,11 +206,15 @@
             <iframe id="preview-frame" title="Certificate Preview"></iframe>
           </section>
 
-          <section class="card">
+          <section class="card card--wide" data-reveal>
             <div class="card-head">
-              <div>
+              <div class="card-copy">
                 <p class="section-tag">Master Data</p>
                 <h2>Admin Managed Panels</h2>
+                <p class="card-text">
+                  Keep the internal datasets accurate so the student flow and certificate output
+                  remain consistent.
+                </p>
               </div>
             </div>
 
@@ -155,8 +227,18 @@
                   <input name="hod_name" type="text" placeholder="HOD name" required />
                   <input name="hod_email" type="email" placeholder="hod@tat.ac.in" required />
                   <input name="hod_mobile" type="text" placeholder="9437000000" required />
-                  <input name="current_serial" type="number" min="0" placeholder="Starting serial number" />
-                  <input name="serial_year" type="number" min="2000" placeholder="Serial year e.g. 2026" />
+                  <input
+                    name="current_serial"
+                    type="number"
+                    min="0"
+                    placeholder="Starting serial number"
+                  />
+                  <input
+                    name="serial_year"
+                    type="number"
+                    min="2000"
+                    placeholder="Serial year e.g. 2026"
+                  />
                   <button type="submit" class="button ghost">Save Branch</button>
                 </form>
                 <div id="branch-list" class="list-box"></div>
@@ -238,9 +320,9 @@
             </div>
           </section>
 
-          <section class="card">
+          <section class="card" data-reveal>
             <div class="card-head">
-              <div>
+              <div class="card-copy">
                 <p class="section-tag">Access</p>
                 <h2>Google Sign-In Requests</h2>
               </div>
@@ -263,9 +345,9 @@
             </div>
           </section>
 
-          <section class="card">
+          <section class="card" data-reveal>
             <div class="card-head">
-              <div>
+              <div class="card-copy">
                 <p class="section-tag">Logs</p>
                 <h2>Generated Certificates</h2>
               </div>
@@ -287,9 +369,9 @@
             </div>
           </section>
 
-          <section class="card">
+          <section class="card card--wide" data-reveal>
             <div class="card-head">
-              <div>
+              <div class="card-copy">
                 <p class="section-tag">Audit</p>
                 <h2>Admin Activity</h2>
               </div>
@@ -314,6 +396,7 @@
       </section>
     </div>
 
+    <script type="module" src="/site.js"></script>
     <script type="module" src="/admin.js"></script>
   </body>
 </html>

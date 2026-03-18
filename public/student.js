@@ -98,6 +98,7 @@ function renderPreview(company) {
   }
 
   elements.companyPreview.innerHTML = `
+    <p class="section-tag">Selected company</p>
     <strong>${escapeHtml(company.name)}</strong>
     <p>${escapeHtml(company.hr_title)}</p>
     <p>${escapeHtml(company.address).replaceAll("\n", "<br />")}</p>
