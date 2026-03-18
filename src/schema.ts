@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const certificateTypeSchema = z.enum(["Internship", "Apprenticeship"]);
 export const studentStatusSchema = z.enum(["Pending", "Approved"]);
+export const adminUserStatusSchema = z.enum(["Pending", "Approved"]);
 
 const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD");
 const sessionSchema = z
@@ -76,6 +77,14 @@ export const adminLoginSchema = z
   })
   .strict();
 
+export const googleLoginSchema = z
+  .object({
+    credential: z.string().trim().min(1),
+    client_id: z.string().trim().min(1).optional(),
+    g_csrf_token: z.string().trim().min(1).optional()
+  })
+  .strict();
+
 export const templateUpdateSchema = templateInputSchema.partial().strict();
 export const certificateRequestSchema = z
   .object({
@@ -87,6 +96,7 @@ export const certificateRequestSchema = z
 
 export type CertificateType = z.infer<typeof certificateTypeSchema>;
 export type StudentStatus = z.infer<typeof studentStatusSchema>;
+export type AdminUserStatus = z.infer<typeof adminUserStatusSchema>;
 export type StudentInput = z.infer<typeof studentInputSchema>;
 export type BranchInput = z.infer<typeof branchInputSchema>;
 export type CompanyInput = z.infer<typeof companyInputSchema>;
@@ -134,4 +144,27 @@ export interface TemplateRecord {
   type: CertificateType;
   content: string;
   active: boolean;
+}
+
+export interface AdminUserRecord {
+  id: string;
+  email: string;
+  auth_provider: "Google";
+  status: AdminUserStatus;
+  google_sub: string;
+  created_at: string;
+  approved_at: string | null;
+  approved_by: string | null;
+  last_login_at: string | null;
+}
+
+export interface AuditLogRecord {
+  id: string;
+  actor_email: string;
+  actor_method: string;
+  action: string;
+  target_type: string;
+  target_id: string;
+  details: string | null;
+  created_at: string;
 }

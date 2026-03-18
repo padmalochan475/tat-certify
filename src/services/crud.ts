@@ -46,6 +46,33 @@ const tableDefinitions: Record<string, { key: string; columns: string[] }> = {
     key: "id",
     columns: ["id", "name", "type", "content", "active"]
   },
+  admin_users: {
+    key: "id",
+    columns: [
+      "id",
+      "email",
+      "auth_provider",
+      "status",
+      "google_sub",
+      "created_at",
+      "approved_at",
+      "approved_by",
+      "last_login_at"
+    ]
+  },
+  audit_log: {
+    key: "id",
+    columns: [
+      "id",
+      "actor_email",
+      "actor_method",
+      "action",
+      "target_type",
+      "target_id",
+      "details",
+      "created_at"
+    ]
+  },
   certificate_log: {
     key: "ref_no",
     columns: ["ref_no", "student_id", "template_id", "generated_on", "academic_year"]

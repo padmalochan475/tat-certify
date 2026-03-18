@@ -1,3 +1,5 @@
 ADMIN_USERNAME=your-admin-username
 ADMIN_PASSWORD=your-strong-admin-password
 ADMIN_SECRET=generate-a-long-random-secret
+GOOGLE_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
+GOOGLE_ALLOWED_HD=tat.ac.in

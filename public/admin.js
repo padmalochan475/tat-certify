@@ -1,17 +1,23 @@
 const state = {
+  adminUsers: [],
+  auditLog: [],
   students: [],
   branches: [],
   companies: [],
   sessions: [],
   durations: [],
   templates: [],
-  certificateLog: []
+  certificateLog: [],
+  googleConfig: null
 }
 
 const elements = {
   flash: document.querySelector("#admin-flash"),
   loginCard: document.querySelector("#login-card"),
   loginForm: document.querySelector("#login-form"),
+  googleLoginPanel: document.querySelector("#google-login-panel"),
+  googleLoginButton: document.querySelector("#google-login-button"),
+  googleLoginNote: document.querySelector("#google-login-note"),
   dashboard: document.querySelector("#dashboard"),
   refreshButton: document.querySelector("#refresh-admin"),
   logoutButton: document.querySelector("#logout-button"),
@@ -25,6 +31,8 @@ const elements = {
   previewFrame: document.querySelector("#preview-frame"),
   previewRef: document.querySelector("#preview-ref"),
   printButton: document.querySelector("#print-button"),
+  googleRequestSummary: document.querySelector("#google-request-summary"),
+  googleUsersBody: document.querySelector("#google-users-body"),
   branchForm: document.querySelector("#branch-form"),
   sessionForm: document.querySelector("#session-form"),
   durationForm: document.querySelector("#duration-form"),
@@ -37,10 +45,12 @@ const elements = {
   sessionList: document.querySelector("#session-list"),
   durationList: document.querySelector("#duration-list"),
   companyList: document.querySelector("#company-list"),
-  logBody: document.querySelector("#log-body")
+  logBody: document.querySelector("#log-body"),
+  auditLogBody: document.querySelector("#audit-log-body")
 }
 
 let flashTimer = null
+let googleScriptPromise = null
 
 function escapeHtml(value) {
   return String(value)
@@ -82,6 +92,28 @@ async function request(url, options = {}) {
   return body
 }
 
+function loadGoogleIdentityScript() {
+  if (window.google?.accounts?.id) {
+    return Promise.resolve(window.google)
+  }
+
+  if (googleScriptPromise) {
+    return googleScriptPromise
+  }
+
+  googleScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script")
+    script.src = "https://accounts.google.com/gsi/client"
+    script.async = true
+    script.defer = true
+    script.onload = () => resolve(window.google)
+    script.onerror = () => reject(new Error("Unable to load Google Sign-In"))
+    document.head.append(script)
+  })
+
+  return googleScriptPromise
+}
+
 function approvedStudents() {
   return state.students.filter((student) => student.status === "Approved")
 }
@@ -96,9 +128,61 @@ function baseTemplateContent(type) {
   )
 }
 
+function formatDateTime(value) {
+  return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(
+    new Date(value)
+  )
+}
+
 function toggleAuthenticated(isAuthenticated) {
   elements.loginCard.classList.toggle("hidden", isAuthenticated)
   elements.dashboard.classList.toggle("hidden", !isAuthenticated)
+}
+
+async function handleGoogleCredential(response) {
+  if (!response?.credential) {
+    throw new Error("Google login did not return a credential")
+  }
+
+  const result = await request("/api/admin/google-login", {
+    method: "POST",
+    body: JSON.stringify({
+      credential: response.credential,
+      client_id: state.googleConfig?.clientId
+    })
+  })
+
+  toggleAuthenticated(true)
+  showFlash(`Signed in as ${result.username}`, "success")
+  await loadBootstrap()
+}
+
+async function loadGoogleLogin() {
+  const config = await request("/api/admin/google/config")
+  state.googleConfig = config
+
+  if (!config.enabled) {
+    elements.googleLoginPanel.classList.add("hidden")
+    return
+  }
+
+  elements.googleLoginNote.textContent = `Sign in with your ${config.hostedDomain} Google Workspace account. First use creates an approval request for an existing admin.`
+  elements.googleLoginPanel.classList.remove("hidden")
+
+  const google = await loadGoogleIdentityScript()
+  google.accounts.id.initialize({
+    client_id: config.clientId,
+    callback: (response) =>
+      handleGoogleCredential(response).catch((error) => showFlash(error.message, "error"))
+  })
+  elements.googleLoginButton.innerHTML = ""
+  google.accounts.id.renderButton(elements.googleLoginButton, {
+    theme: "outline",
+    size: "large",
+    shape: "pill",
+    text: "continue_with",
+    width: 320
+  })
 }
 
 function renderRequests() {
@@ -146,6 +230,50 @@ function renderRequests() {
             <span class="muted">${escapeHtml(student.duration)} from ${escapeHtml(student.start_date)}</span>
           </td>
           <td><span class="badge ${badgeClass}">${escapeHtml(student.status)}</span></td>
+          <td>${actions}</td>
+        </tr>
+      `
+    })
+    .join("")
+}
+
+function renderGoogleUsers() {
+  const pending = state.adminUsers.filter((user) => user.status === "Pending").length
+  const approved = state.adminUsers.filter((user) => user.status === "Approved").length
+  elements.googleRequestSummary.textContent = `${pending} pending, ${approved} approved`
+
+  if (state.adminUsers.length === 0) {
+    elements.googleUsersBody.innerHTML =
+      '<tr><td colspan="5" class="empty-row">No Google sign-in requests yet.</td></tr>'
+    return
+  }
+
+  elements.googleUsersBody.innerHTML = state.adminUsers
+    .map((user) => {
+      const badgeClass = user.status === "Approved" ? "approved" : "pending"
+      const actions =
+        user.status === "Pending"
+          ? `
+            <div class="table-actions">
+              <button class="button ghost" type="button" data-google-action="approve" data-id="${user.id}">Approve</button>
+              <button class="button secondary" type="button" data-google-action="remove" data-id="${user.id}">Remove</button>
+            </div>
+          `
+          : `
+            <div class="table-actions">
+              <button class="button secondary" type="button" data-google-action="remove" data-id="${user.id}">Remove</button>
+            </div>
+          `
+
+      return `
+        <tr>
+          <td>
+            <strong>${escapeHtml(user.email)}</strong><br />
+            <span class="muted">${escapeHtml(user.auth_provider)}</span>
+          </td>
+          <td><span class="badge ${badgeClass}">${escapeHtml(user.status)}</span></td>
+          <td>${escapeHtml(formatDateTime(user.created_at))}</td>
+          <td>${user.approved_at ? escapeHtml(formatDateTime(user.approved_at)) : '<span class="muted">Not approved</span>'}</td>
           <td>${actions}</td>
         </tr>
       `
@@ -282,13 +410,45 @@ function renderLogs() {
           <td>${escapeHtml(entry.cert_type)}</td>
           <td>${escapeHtml(entry.template_name)}</td>
           <td>${escapeHtml(
-            new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(
-              new Date(entry.generated_on)
-            )
+            formatDateTime(entry.generated_on)
           )}</td>
         </tr>
       `
     )
+    .join("")
+}
+
+function renderAuditLog() {
+  if (state.auditLog.length === 0) {
+    elements.auditLogBody.innerHTML =
+      '<tr><td colspan="5" class="empty-row">No admin activity recorded yet.</td></tr>'
+    return
+  }
+
+  elements.auditLogBody.innerHTML = state.auditLog
+    .map((entry) => {
+      let detailsText = ""
+      if (entry.details) {
+        try {
+          const parsed = JSON.parse(entry.details)
+          detailsText = Object.entries(parsed)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(" | ")
+        } catch {
+          detailsText = entry.details
+        }
+      }
+
+      return `
+        <tr>
+          <td><strong>${escapeHtml(entry.actor_email)}</strong><br /><span class="muted">${escapeHtml(entry.actor_method)}</span></td>
+          <td>${escapeHtml(entry.action)}</td>
+          <td>${escapeHtml(entry.target_type)}<br /><span class="muted">${escapeHtml(entry.target_id)}</span></td>
+          <td>${detailsText ? escapeHtml(detailsText) : '<span class="muted">No details</span>'}</td>
+          <td>${escapeHtml(formatDateTime(entry.created_at))}</td>
+        </tr>
+      `
+    })
     .join("")
 }
 
@@ -308,6 +468,8 @@ async function loadBootstrap() {
   const selectedTemplateId = elements.generatorTemplate.value
   const data = await request("/api/admin/bootstrap")
 
+  state.adminUsers = data.adminUsers
+  state.auditLog = data.auditLog
   state.students = data.students
   state.branches = data.branches
   state.companies = data.companies
@@ -317,9 +479,11 @@ async function loadBootstrap() {
   state.certificateLog = data.certificateLog
 
   renderRequests()
+  renderGoogleUsers()
   populateGenerator(selectedStudentId, selectedTemplateId)
   renderMasterLists()
   renderLogs()
+  renderAuditLog()
   syncTemplateDraft(false)
 }
 
@@ -346,6 +510,7 @@ async function handleLogin(event) {
 
 async function handleLogout() {
   await request("/api/admin/logout", { method: "POST" })
+  window.google?.accounts?.id?.disableAutoSelect?.()
   toggleAuthenticated(false)
   elements.previewFrame.srcdoc = ""
   elements.previewRef.textContent = "No preview generated yet."
@@ -380,6 +545,29 @@ async function handleRequestAction(event) {
     elements.generatorStudent.value = studentId
     populateGenerator(studentId)
     elements.generatorForm.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+}
+
+async function handleGoogleUserAction(event) {
+  const target = event.target.closest("button[data-google-action]")
+  if (!target) {
+    return
+  }
+
+  const action = target.dataset.googleAction
+  const userId = target.dataset.id
+
+  if (action === "approve") {
+    await request(`/api/admin/google-users/${userId}/approve`, { method: "PATCH" })
+    showFlash("Google sign-in request approved.", "success")
+    await loadBootstrap()
+    return
+  }
+
+  if (action === "remove") {
+    await request(`/api/admin/google-users/${userId}`, { method: "DELETE" })
+    showFlash("Google sign-in request removed.", "info")
+    await loadBootstrap()
   }
 }
 
@@ -534,6 +722,9 @@ elements.refreshButton.addEventListener("click", () =>
 elements.requestsBody.addEventListener("click", (event) =>
   handleRequestAction(event).catch((error) => showFlash(error.message, "error"))
 )
+elements.googleUsersBody.addEventListener("click", (event) =>
+  handleGoogleUserAction(event).catch((error) => showFlash(error.message, "error"))
+)
 elements.branchList.addEventListener("click", (event) =>
   handleListAction(event).catch((error) => showFlash(error.message, "error"))
 )
@@ -572,4 +763,5 @@ elements.templateType.addEventListener("change", () => syncTemplateDraft(false))
 elements.printButton.addEventListener("click", printPreview)
 
 elements.generatorIssuedOn.value = new Date().toISOString().slice(0, 10)
-checkSession().catch((error) => showFlash(error.message, "error"))
+
+Promise.all([loadGoogleLogin(), checkSession()]).catch((error) => showFlash(error.message, "error"))

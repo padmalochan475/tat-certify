@@ -53,6 +53,16 @@
             <button type="submit" class="button primary">Login</button>
           </div>
         </form>
+
+        <div id="google-login-panel" class="google-login-panel hidden">
+          <div class="login-divider">
+            <span>or</span>
+          </div>
+          <p id="google-login-note" class="muted">
+            Sign in with your Google Workspace account.
+          </p>
+          <div id="google-login-button" class="google-login-button"></div>
+        </div>
       </section>
 
       <section id="dashboard" class="hidden">
@@ -231,6 +241,31 @@
           <section class="card">
             <div class="card-head">
               <div>
+                <p class="section-tag">Access</p>
+                <h2>Google Sign-In Requests</h2>
+              </div>
+              <span id="google-request-summary" class="muted">Loading...</span>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Requested</th>
+                    <th>Approved</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="google-users-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <div>
                 <p class="section-tag">Logs</p>
                 <h2>Generated Certificates</h2>
               </div>
@@ -248,6 +283,30 @@
                   </tr>
                 </thead>
                 <tbody id="log-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <div>
+                <p class="section-tag">Audit</p>
+                <h2>Admin Activity</h2>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Target</th>
+                    <th>Details</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-log-body"></tbody>
               </table>
             </div>
           </section>

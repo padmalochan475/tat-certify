@@ -8,6 +8,8 @@ const schemaSql = [
   "CREATE TABLE IF NOT EXISTS companies (name TEXT PRIMARY KEY, hr_title TEXT NOT NULL, address TEXT NOT NULL);",
   "CREATE TABLE IF NOT EXISTS templates (id TEXT PRIMARY KEY, name TEXT NOT NULL, type TEXT NOT NULL CHECK (type IN ('Internship', 'Apprenticeship')), content TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1);",
   "CREATE TABLE IF NOT EXISTS certificate_log (ref_no TEXT PRIMARY KEY, student_id TEXT NOT NULL, template_id TEXT NOT NULL, generated_on TEXT NOT NULL, academic_year TEXT NOT NULL, FOREIGN KEY(student_id) REFERENCES students(id), FOREIGN KEY(template_id) REFERENCES templates(id));",
+  "CREATE TABLE IF NOT EXISTS admin_users (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, auth_provider TEXT NOT NULL CHECK (auth_provider IN ('Google')), status TEXT NOT NULL CHECK (status IN ('Pending', 'Approved')), google_sub TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL, approved_at TEXT, approved_by TEXT, last_login_at TEXT);",
+  "CREATE TABLE IF NOT EXISTS audit_log (id TEXT PRIMARY KEY, actor_email TEXT NOT NULL, actor_method TEXT NOT NULL, action TEXT NOT NULL, target_type TEXT NOT NULL, target_id TEXT NOT NULL, details TEXT, created_at TEXT NOT NULL);",
   "CREATE TABLE IF NOT EXISTS system_state (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL);"
 ].join("\n");
 

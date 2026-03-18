@@ -3,6 +3,8 @@ import { applyTemplate } from "../engines/template";
 import type {
   AcademicSessionInput,
   AcademicSessionRecord,
+  AdminUserRecord,
+  AuditLogRecord,
   BranchInput,
   BranchRecord,
   CompanyInput,
@@ -33,6 +35,8 @@ export interface StudentBootstrapPayload {
 }
 
 export interface AdminBootstrapPayload extends StudentBootstrapPayload {
+  adminUsers: AdminUserRecord[];
+  auditLog: AuditLogRecord[];
   students: StudentRecord[];
   templates: TemplateRecord[];
   certificateLog: Array<{
@@ -44,6 +48,11 @@ export interface AdminBootstrapPayload extends StudentBootstrapPayload {
     cert_type: string;
     template_name: string;
   }>;
+}
+
+export interface AdminActor {
+  email: string;
+  method: string;
 }
 
 type RowRecord = Record<string, unknown>;
@@ -109,6 +118,33 @@ function normalizeStudent(record: RowRecord): StudentRecord {
     duration: String(record.duration),
     start_date: String(record.start_date),
     status: String(record.status) as StudentRecord["status"],
+    created_at: String(record.created_at)
+  };
+}
+
+function normalizeAdminUser(record: RowRecord): AdminUserRecord {
+  return {
+    id: String(record.id),
+    email: String(record.email),
+    auth_provider: "Google",
+    status: String(record.status) as AdminUserRecord["status"],
+    google_sub: String(record.google_sub),
+    created_at: String(record.created_at),
+    approved_at: record.approved_at ? String(record.approved_at) : null,
+    approved_by: record.approved_by ? String(record.approved_by) : null,
+    last_login_at: record.last_login_at ? String(record.last_login_at) : null
+  };
+}
+
+function normalizeAuditLog(record: RowRecord): AuditLogRecord {
+  return {
+    id: String(record.id),
+    actor_email: String(record.actor_email),
+    actor_method: String(record.actor_method),
+    action: String(record.action),
+    target_type: String(record.target_type),
+    target_id: String(record.target_id),
+    details: record.details ? String(record.details) : null,
     created_at: String(record.created_at)
   };
 }
@@ -196,6 +232,8 @@ export class TatCertificateService {
 
   async getAdminBootstrap(): Promise<AdminBootstrapPayload> {
     const [
+      adminUsersResult,
+      auditLogResult,
       studentsResult,
       branchesResult,
       companiesResult,
@@ -204,6 +242,11 @@ export class TatCertificateService {
       templatesResult,
       certificateLogResult
     ] = await this.db.batch([
+      this.db.prepare(
+        `SELECT * FROM admin_users
+         ORDER BY CASE status WHEN 'Pending' THEN 0 ELSE 1 END, datetime(created_at) DESC`
+      ),
+      this.db.prepare(`SELECT * FROM audit_log ORDER BY datetime(created_at) DESC LIMIT 100`),
       this.db.prepare(`SELECT * FROM students ORDER BY datetime(created_at) DESC`),
       this.db.prepare(`SELECT * FROM branches ORDER BY code ASC`),
       this.db.prepare(`SELECT * FROM companies ORDER BY name ASC`),
@@ -226,6 +269,8 @@ export class TatCertificateService {
     ]);
 
     return {
+      adminUsers: adminUsersResult.results.map((record) => normalizeAdminUser(record as RowRecord)),
+      auditLog: auditLogResult.results.map((record) => normalizeAuditLog(record as RowRecord)),
       students: studentsResult.results.map((record) => normalizeStudent(record as RowRecord)),
       branches: branchesResult.results.map((record) => normalizeBranch(record as RowRecord)),
       companies: companiesResult.results.map((record) => normalizeCompany(record as RowRecord)),
@@ -429,6 +474,88 @@ export class TatCertificateService {
     await this.crud.delete("academic_sessions", session.value);
   }
 
+  async requestGoogleAdminAccess(email: string, googleSub: string): Promise<AdminUserRecord> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const existing = await firstQuery(
+      this.db,
+      `SELECT * FROM admin_users WHERE email = ? OR google_sub = ? LIMIT 1`,
+      [normalizedEmail, googleSub]
+    );
+
+    if (existing) {
+      return normalizeAdminUser(existing);
+    }
+
+    const record: AdminUserRecord = {
+      id: crypto.randomUUID(),
+      email: normalizedEmail,
+      auth_provider: "Google",
+      status: "Pending",
+      google_sub: googleSub,
+      created_at: new Date().toISOString(),
+      approved_at: null,
+      approved_by: null,
+      last_login_at: null
+    };
+
+    await this.crud.create("admin_users", { ...record });
+    return record;
+  }
+
+  async approveAdminUser(userId: string, approvedBy: string): Promise<AdminUserRecord> {
+    const user = await this.getAdminUser(userId);
+
+    await this.crud.update("admin_users", userId, {
+      status: "Approved",
+      approved_at: new Date().toISOString(),
+      approved_by: approvedBy
+    });
+
+    return this.getAdminUser(userId);
+  }
+
+  async deleteAdminUser(userId: string): Promise<void> {
+    await this.getAdminUser(userId);
+    await this.crud.delete("admin_users", userId);
+  }
+
+  async markAdminUserLogin(email: string): Promise<void> {
+    const existing = await firstQuery(
+      this.db,
+      `SELECT id FROM admin_users WHERE email = ? AND status = 'Approved' LIMIT 1`,
+      [email.trim().toLowerCase()]
+    );
+
+    if (!existing?.id) {
+      return;
+    }
+
+    await this.crud.update("admin_users", String(existing.id), {
+      last_login_at: new Date().toISOString()
+    });
+  }
+
+  async writeAuditLog(
+    actor: AdminActor,
+    action: string,
+    targetType: string,
+    targetId: string,
+    details?: Record<string, unknown>
+  ): Promise<void> {
+    const record: AuditLogRecord = {
+      id: crypto.randomUUID(),
+      actor_email: actor.email,
+      actor_method: actor.method,
+      action,
+      target_type: targetType,
+      target_id: targetId,
+      details: details ? JSON.stringify(details) : null,
+      created_at: new Date().toISOString()
+    };
+
+    await this.crud.create("audit_log", { ...record });
+  }
+
   async createTemplate(input: TemplateInput): Promise<TemplateRecord> {
     const template: TemplateRecord = {
       id: crypto.randomUUID(),
@@ -599,6 +726,16 @@ export class TatCertificateService {
     }
 
     return normalizeStudent(record);
+  }
+
+  private async getAdminUser(userId: string): Promise<AdminUserRecord> {
+    const record = (await this.crud.read("admin_users", { id: userId }))[0];
+
+    if (!record) {
+      throw new AppError(404, "Admin sign-in request not found");
+    }
+
+    return normalizeAdminUser(record);
   }
 
   private async getBranch(code: string): Promise<BranchRecord> {

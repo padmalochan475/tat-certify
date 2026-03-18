@@ -15,6 +15,8 @@ Dynamic certificate request and generation system for Trident Academy of Technol
 - Academic year engine
 - Certificate log tracking
 - Cloudflare D1-backed CRUD architecture with strict validation
+- Optional Google Workspace admin sign-in restricted to `tat.ac.in`, with admin approval workflow
+- Audit log for login, approval, rejection, and certificate generation actions
 
 ## Stack
 
@@ -44,6 +46,9 @@ copy .dev.vars.example .dev.vars
 ```
 
 3. Edit `.dev.vars` and set your own local admin credentials and secret.
+   Optional:
+   - `GOOGLE_CLIENT_ID` for Google Sign-In
+   - `GOOGLE_ALLOWED_HD=tat.ac.in` to restrict Google login to your Workspace domain
 
 4. Start the Pages dev server:
 
@@ -104,6 +109,8 @@ npx wrangler pages deploy public --project-name tat-certify --branch main
    - `ADMIN_USERNAME`
    - `ADMIN_PASSWORD`
    - `ADMIN_SECRET`
+   - `GOOGLE_CLIENT_ID` (optional)
+   - `GOOGLE_ALLOWED_HD` (optional, defaults to `tat.ac.in`)
 5. In GitHub repository settings, add Actions secrets:
    - `CLOUDFLARE_API_TOKEN`
    - `CLOUDFLARE_ACCOUNT_ID`
@@ -130,6 +137,7 @@ npx wrangler pages deploy public --project-name tat-certify --branch main
 - D1 schema and seed logic: [src/database.ts](D:/Projects/Internship-Projects/src/database.ts)
 - Certificate engine: [src/services/certificateService.ts](D:/Projects/Internship-Projects/src/services/certificateService.ts)
 - D1 migration: [migrations/0001_initial.sql](D:/Projects/Internship-Projects/migrations/0001_initial.sql)
+- D1 migration: [migrations/0002_admin_auth_and_audit.sql](D:/Projects/Internship-Projects/migrations/0002_admin_auth_and_audit.sql)
 - Wrangler config: [wrangler.toml](D:/Projects/Internship-Projects/wrangler.toml)
 - Landing page: [public/index.html](D:/Projects/Internship-Projects/public/index.html)
 - Student page: [public/student.html](D:/Projects/Internship-Projects/public/student.html)
