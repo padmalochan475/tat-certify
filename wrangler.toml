@@ -5,6 +5,6 @@ pages_build_output_dir = "public"
 [[d1_databases]]
 binding = "DB"
 database_name = "tat-certificate-db"
-database_id = "00000000-0000-0000-0000-000000000000"
-preview_database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "922aeed2-2b33-491c-8dcc-fc3ab7b3ff34"
+preview_database_id = "301096f9-e82f-47b7-8f3f-76440f59de4e"
 migrations_dir = "migrations"
