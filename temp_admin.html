@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | TAT Certificate System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar" data-reveal>
+        <a class="brand" href="/">
+          <span class="brand-mark">TAT</span>
+          <span class="brand-copy">
+            <strong>Certificate System</strong>
+            <small>Trident Academy of Technology</small>
+          </span>
+        </a>
+
+        <nav class="topnav">
+          <a href="/student">Student Form</a>
+          <a href="/admin" class="active">Admin Login</a>
+        </nav>
+      </header>
+
+      <section class="hero page-hero admin-hero" data-reveal>
+        <div class="hero-copy">
+          <p class="eyebrow">Operations Console</p>
+          <h1>Manage approvals, data governance, and certificate generation from one workspace.</h1>
+          <p class="hero-text">
+            This is the internal control surface for requests, templates, branches, companies,
+            Google sign-in approvals, and audit visibility.
+          </p>
+          <div class="hero-actions">
+            <span class="chip accent">Admin controlled</span>
+            <span class="chip">Audit visible</span>
+            <span class="chip">Print workflow ready</span>
+          </div>
+        </div>
+
+        <aside class="hero-panel">
+          <p class="section-tag">Control Layers</p>
+          <div class="signal-stack">
+            <article class="signal-item">
+              <span class="signal-index">01</span>
+              <div>
+                <strong>Approval Gate</strong>
+                <p>Only reviewed student requests move into generation-ready state.</p>
+              </div>
+            </article>
+            <article class="signal-item">
+              <span class="signal-index">02</span>
+              <div>
+                <strong>Master Data</strong>
+                <p>Branches, HOD data, sessions, companies, durations, and templates stay centralized.</p>
+              </div>
+            </article>
+            <article class="signal-item">
+              <span class="signal-index">03</span>
+              <div>
+                <strong>Access Trace</strong>
+                <p>Google sign-in requests and admin activity remain visible to the office.</p>
+              </div>
+            </article>
+          </div>
+        </aside>
+      </section>
+
+      <div id="admin-flash" class="flash" hidden></div>
+
+      <main class="login-layout">
+        <section id="login-card" class="card login-card" data-reveal>
+          <div class="card-head">
+            <div class="card-copy">
+              <p class="section-tag">Restricted Access</p>
+              <h2>Admin Login</h2>
+              <p class="card-text">
+                Use password login or, when enabled in backend configuration, sign in with your
+                approved `tat.ac.in` Google Workspace account.
+              </p>
+            </div>
+            <span class="chip">Protected</span>
+          </div>
+
+          <form id="login-form" class="login-form">
+            <label>
+              Username
+              <input name="username" type="text" placeholder="admin" required />
+            </label>
+
+            <label>
+              Password
+              <input name="password" type="password" placeholder="Enter admin password" required />
+            </label>
+
+            <div class="form-actions">
+              <button type="submit" class="button primary">Login</button>
+            </div>
+          </form>
+
+          <div id="google-login-panel" class="google-login-panel">
+            <div class="login-divider">
+              <span>or</span>
+            </div>
+            <p id="google-login-note" class="muted">
+              Checking Google Workspace sign-in availability...
+            </p>
+            <div id="google-login-button" class="google-login-button"></div>
+          </div>
+        </section>
+
+        <aside class="card security-card" data-reveal>
+          <p class="section-tag">Workspace Notes</p>
+          <h2>Internal access is designed to stay controlled, not open.</h2>
+          <ul class="feature-list compact">
+            <li>Password login remains the primary recovery path for the office.</li>
+            <li>Google users require both `tat.ac.in` domain restriction and admin approval.</li>
+            <li>Generated certificates, approvals, and removals are written to the audit trail.</li>
+            <li>Preview and print controls remain available only after authentication.</li>
+          </ul>
+        </aside>
+      </main>
+
+      <section id="dashboard" class="hidden">
+        <div class="dashboard-header card" data-reveal>
+          <div class="card-head admin-toolbar">
+            <div class="card-copy">
+              <p class="section-tag">Logged In</p>
+              <h2>Admin Dashboard</h2>
+              <p class="card-text">
+                Operate the certificate workflow, maintain master data, and review the complete
+                activity trail from one coordinated workspace.
+              </p>
+            </div>
+            <div class="form-actions">
+              <button id="refresh-admin" type="button" class="button ghost">Refresh Data</button>
+              <button id="logout-button" type="button" class="button secondary">Logout</button>
+            </div>
+          </div>
+        </div>
+
+        <main class="admin-layout">
+          <section class="card card--wide" data-reveal>
+            <div class="card-head">
+              <div class="card-copy">
+                <p class="section-tag">Requests</p>
+                <h2>Student Submissions</h2>
+              </div>
+              <span id="request-summary" class="muted">Loading...</span>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Company</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="requests-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="card" data-reveal>
+            <div class="card-head">
+              <div class="card-copy">
+                <p class="section-tag">Generate</p>
+                <h2>Certificate Preview</h2>
+              </div>
+              <span id="generator-hint" class="muted">Approved requests only</span>
+            </div>
+
+            <form id="generator-form" class="stacked-form">
+              <label>
+                Approved student
+                <select id="generator-student" required></select>
+              </label>
+
+              <label>
+                Template
+                <select id="generator-template" required></select>
+              </label>
+
+              <label>
+                Issue date
+                <input id="generator-issued-on" type="date" />
+              </label>
+
+              <div class="form-actions">
+                <button type="submit" class="button primary">Generate Preview</button>
+                <button id="print-button" type="button" class="button ghost" disabled>Print</button>
+              </div>
+            </form>
+
+            <p id="preview-ref" class="muted">No preview generated yet.</p>
+            <iframe id="preview-frame" title="Certificate Preview"></iframe>
+          </section>
+
+          <section class="card card--wide" data-reveal>
+            <div class="card-head">
+              <div class="card-copy">
+                <p class="section-tag">Master Data</p>
+                <h2>Admin Managed Panels</h2>
+                <p class="card-text">
+                  Keep the internal datasets accurate so the student flow and certificate output
+                  remain consistent.
+                </p>
+              </div>
+            </div>
+
+            <div class="master-grid">
+              <div class="mini-card">
+                <h3>Branch & HOD</h3>
+                <form id="branch-form" class="stacked-form">
+                  <input name="code" type="text" placeholder="CSE" required />
+                  <input name="name" type="text" placeholder="Computer Science Engineering" required />
+                  <input name="hod_name" type="text" placeholder="HOD name" required />
+                  <input name="hod_email" type="email" placeholder="hod@tat.ac.in" required />
+                  <input name="hod_mobile" type="text" placeholder="9437000000" required />
+                  <input
+                    name="current_serial"
+                    type="number"
+                    min="0"
+                    placeholder="Starting serial number"
+                  />
+                  <input
+                    name="serial_year"
+                    type="number"
+                    min="2000"
+                    placeholder="Serial year e.g. 2026"
+                  />
+                  <button type="submit" class="button ghost">Save Branch</button>
+                </form>
+                <div id="branch-list" class="list-box"></div>
+              </div>
+
+              <div class="mini-card">
+                <h3>Academic Sessions</h3>
+                <form id="session-form" class="stacked-form">
+                  <input name="value" type="text" placeholder="2023-2027" required />
+                  <label class="checkbox">
+                    <input name="active" type="checkbox" checked />
+                    Active in student form
+                  </label>
+                  <button type="submit" class="button ghost">Save Session</button>
+                </form>
+                <div id="session-list" class="list-box"></div>
+              </div>
+
+              <div class="mini-card">
+                <h3>Duration Options</h3>
+                <form id="duration-form" class="stacked-form">
+                  <select name="cert_type" required>
+                    <option value="Internship">Internship</option>
+                    <option value="Apprenticeship">Apprenticeship</option>
+                  </select>
+                  <input name="label" type="text" placeholder="TWO MONTHS" required />
+                  <label class="checkbox">
+                    <input name="active" type="checkbox" checked />
+                    Active in student form
+                  </label>
+                  <button type="submit" class="button ghost">Save Duration</button>
+                </form>
+                <div id="duration-list" class="list-box"></div>
+              </div>
+
+              <div class="mini-card">
+                <h3>Company Directory</h3>
+                <form id="company-form" class="stacked-form">
+                  <input name="name" type="text" placeholder="TPCODL" required />
+                  <input name="hr_title" type="text" placeholder="Head HR" required />
+                  <textarea
+                    name="address"
+                    rows="4"
+                    placeholder="Corporate Office&#10;Power House Square&#10;Bhubaneswar"
+                    required
+                  ></textarea>
+                  <button type="submit" class="button ghost">Save Company</button>
+                </form>
+                <div id="company-list" class="list-box"></div>
+              </div>
+
+              <div class="mini-card">
+                <div class="mini-card-head">
+                  <h3>Templates</h3>
+                  <button id="prefill-template" type="button" class="text-button">
+                    Use current format
+                  </button>
+                </div>
+                <form id="template-form" class="stacked-form">
+                  <input name="name" type="text" placeholder="TAT Internship Variant" required />
+                  <select id="template-type" name="type" required>
+                    <option value="Internship">Internship</option>
+                    <option value="Apprenticeship">Apprenticeship</option>
+                  </select>
+                  <label class="checkbox">
+                    <input name="active" type="checkbox" checked />
+                    Active template
+                  </label>
+                  <textarea
+                    id="template-content"
+                    name="content"
+                    rows="10"
+                    placeholder="HTML template with {{variables}}"
+                    required
+                  ></textarea>
+                  <button type="submit" class="button ghost">Save Template</button>
+                </form>
+              </div>
+            </div>
+          </section>
+
+          <section class="card" data-reveal>
+            <div class="card-head">
+              <div class="card-copy">
+                <p class="section-tag">Access</p>
+                <h2>Google Sign-In Requests</h2>
+              </div>
+              <span id="google-request-summary" class="muted">Loading...</span>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Requested</th>
+                    <th>Approved</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="google-users-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="card" data-reveal>
+            <div class="card-head">
+              <div class="card-copy">
+                <p class="section-tag">Logs</p>
+                <h2>Generated Certificates</h2>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ref No.</th>
+                    <th>Student</th>
+                    <th>Type</th>
+                    <th>Template</th>
+                    <th>Generated</th>
+                  </tr>
+                </thead>
+                <tbody id="log-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="card card--wide" data-reveal>
+            <div class="card-head">
+              <div class="card-copy">
+                <p class="section-tag">Audit</p>
+                <h2>Admin Activity</h2>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Target</th>
+                    <th>Details</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-log-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+      </section>
+    </div>
+
+    <script type="module" src="/site.js"></script>
+    <script type="module" src="/admin.js"></script>
+  </body>
+</html>

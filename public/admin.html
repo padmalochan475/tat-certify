@@ -3,399 +3,389 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin | TAT Certificate System</title>
+    <title>Admin Terminal | TAT </title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
-    <div class="shell">
+    <div class="shell" style="max-width: 1400px;" id="admin-shell">
       <header class="topbar" data-reveal>
         <a class="brand" href="/">
-          <span class="brand-mark">TAT</span>
-          <span class="brand-copy">
-            <strong>Certificate System</strong>
-            <small>Trident Academy of Technology</small>
-          </span>
+          <div class="brand-mark">TAT</div>
+          <div class="brand-copy">
+            <strong>Admin Terminal</strong>
+            <small>Operations Command</small>
+          </div>
         </a>
-
-        <nav class="topnav">
-          <a href="/student">Student Form</a>
-          <a href="/admin" class="active">Admin Login</a>
-        </nav>
-      </header>
-
-      <section class="hero page-hero admin-hero" data-reveal>
-        <div class="hero-copy">
-          <p class="eyebrow">Operations Console</p>
-          <h1>Manage approvals, data governance, and certificate generation from one workspace.</h1>
-          <p class="hero-text">
-            This is the internal control surface for requests, templates, branches, companies,
-            Google sign-in approvals, and audit visibility.
-          </p>
-          <div class="hero-actions">
-            <span class="chip accent">Admin controlled</span>
-            <span class="chip">Audit visible</span>
-            <span class="chip">Print workflow ready</span>
-          </div>
+        <div id="admin-header-actions" class="hidden">
+           <button id="logout-button" class="button ghost small" style="border-radius: 999px;">
+             <i class="fas fa-sign-out-alt"></i> Terminate Session
+           </button>
         </div>
-
-        <aside class="hero-panel">
-          <p class="section-tag">Control Layers</p>
-          <div class="signal-stack">
-            <article class="signal-item">
-              <span class="signal-index">01</span>
-              <div>
-                <strong>Approval Gate</strong>
-                <p>Only reviewed student requests move into generation-ready state.</p>
-              </div>
-            </article>
-            <article class="signal-item">
-              <span class="signal-index">02</span>
-              <div>
-                <strong>Master Data</strong>
-                <p>Branches, HOD data, sessions, companies, durations, and templates stay centralized.</p>
-              </div>
-            </article>
-            <article class="signal-item">
-              <span class="signal-index">03</span>
-              <div>
-                <strong>Access Trace</strong>
-                <p>Google sign-in requests and admin activity remain visible to the office.</p>
-              </div>
-            </article>
-          </div>
-        </aside>
-      </section>
+      </header>
 
       <div id="admin-flash" class="flash" hidden></div>
 
-      <main class="login-layout">
-        <section id="login-card" class="card login-card" data-reveal>
+      <!-- Login View -->
+      <main id="login-card" class="login-layout" style="margin-top: 8rem; display: flex; justify-content: center;">
+        <section class="card" style="max-width: 480px; width: 100%;" data-reveal>
           <div class="card-head">
-            <div class="card-copy">
-              <p class="section-tag">Restricted Access</p>
-              <h2>Admin Login</h2>
-              <p class="card-text">
-                Use password login or, when enabled in backend configuration, sign in with your
-                approved `tat.ac.in` Google Workspace account.
-              </p>
-            </div>
-            <span class="chip">Protected</span>
+            <span class="section-tag" style="color: var(--danger);">Restricted Interface</span>
+            <h2>Administrator Authentication</h2>
+            <p class="muted">Access restricted to department heads and official clerical staff.</p>
           </div>
 
-          <form id="login-form" class="login-form">
+          <form id="login-form" class="form-shell">
             <label>
-              Username
-              <input name="username" type="text" placeholder="admin" required />
+              Administrator ID
+              <input name="username" type="text" placeholder="Official ID" required />
             </label>
-
             <label>
-              Password
-              <input name="password" type="password" placeholder="Enter admin password" required />
+              Confidential Credential
+              <input name="password" type="password" placeholder="Key Phrase" required />
             </label>
+            <button type="submit" class="button primary" style="width: 100%; border-radius: 999px;">Authorize Entry</button>
 
-            <div class="form-actions">
-              <button type="submit" class="button primary">Login</button>
+            <div id="google-login-panel" class="" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+              <p class="small muted text-center" id="google-login-note" style="margin-bottom: 1.5rem;">Checking Google Workspace...</p>
+              <div id="google-login-button" style="display: flex; justify-content: center;"></div>
             </div>
           </form>
-
-          <div id="google-login-panel" class="google-login-panel">
-            <div class="login-divider">
-              <span>or</span>
-            </div>
-            <p id="google-login-note" class="muted">
-              Checking Google Workspace sign-in availability...
-            </p>
-            <div id="google-login-button" class="google-login-button"></div>
-          </div>
         </section>
-
-        <aside class="card security-card" data-reveal>
-          <p class="section-tag">Workspace Notes</p>
-          <h2>Internal access is designed to stay controlled, not open.</h2>
-          <ul class="feature-list compact">
-            <li>Password login remains the primary recovery path for the office.</li>
-            <li>Google users require both `tat.ac.in` domain restriction and admin approval.</li>
-            <li>Generated certificates, approvals, and removals are written to the audit trail.</li>
-            <li>Preview and print controls remain available only after authentication.</li>
-          </ul>
-        </aside>
       </main>
 
-      <section id="dashboard" class="hidden">
-        <div class="dashboard-header card" data-reveal>
-          <div class="card-head admin-toolbar">
-            <div class="card-copy">
-              <p class="section-tag">Logged In</p>
-              <h2>Admin Dashboard</h2>
-              <p class="card-text">
-                Operate the certificate workflow, maintain master data, and review the complete
-                activity trail from one coordinated workspace.
-              </p>
-            </div>
-            <div class="form-actions">
-              <button id="refresh-admin" type="button" class="button ghost">Refresh Data</button>
-              <button id="logout-button" type="button" class="button secondary">Logout</button>
-            </div>
-          </div>
-        </div>
+      <!-- Dashboard View -->
+      <main id="dashboard" class="admin-workspace hidden" style="margin-top: 5rem;">
+        <aside class="admin-sidebar" data-reveal>
+          <nav class="sidebar-nav">
+            <a class="nav-link active" data-section="all">
+              <i class="fas fa-layer-group"></i> Command Board
+            </a>
+            <a class="nav-link" data-section="applications-section">
+              <i class="fas fa-inbox"></i> Inbox & Validation
+            </a>
+            <a class="nav-link" data-section="generator-section">
+              <i class="fas fa-fingerprint"></i> Issuance Console
+            </a>
+            <a class="nav-link" data-section="master-data-section">
+              <i class="fas fa-server"></i> Institutional Records
+            </a>
+            <a class="nav-link" data-section="branch-contacts-section" id="btn-show-branch-contacts">
+              <i class="fas fa-address-book"></i> Registry Directory
+            </a>
+            <a class="nav-link" data-section="audit-log-section" id="btn-show-audit-log">
+              <i class="fas fa-history"></i> Immutable Audit
+            </a>
+            <a class="nav-link" data-section="template-designer-section" id="btn-show-designer">
+              <i class="fas fa-paint-brush"></i> Designer
+            </a>
+            <a class="nav-link" data-section="system-section" id="btn-show-serial-panel">
+              <i class="fas fa-shield-alt"></i> Core Protocols
+            </a>
+          </nav>
+        </aside>
 
-        <main class="admin-layout">
-          <section class="card card--wide" data-reveal>
-            <div class="card-head">
-              <div class="card-copy">
-                <p class="section-tag">Requests</p>
-                <h2>Student Submissions</h2>
-              </div>
-              <span id="request-summary" class="muted">Loading...</span>
-            </div>
+        <section class="admin-content" style="display: flex; flex-direction: column; gap: 4rem; padding-bottom: 10rem;">
+          
+          <!-- Requests Section -->
+          <section id="applications-section" class="card view-section" data-reveal>
+             <div class="card-head" style="display: flex; justify-content: space-between; align-items: start;">
+               <div>
+                  <span class="section-tag">Validation Queue</span>
+                  <h2>Incoming Applications</h2>
+                  <p id="request-summary" class="muted small">Loading...</p>
+               </div>
+               <button class="button ghost" id="refresh-admin" style="border-radius: 999px;">
+                  <i class="fas fa-sync-alt"></i> Sync Data
+               </button>
+             </div>
 
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Student</th>
-                    <th>Company</th>
-                    <th>Details</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="requests-body"></tbody>
-              </table>
-            </div>
-          </section>
-
-          <section class="card" data-reveal>
-            <div class="card-head">
-              <div class="card-copy">
-                <p class="section-tag">Generate</p>
-                <h2>Certificate Preview</h2>
-              </div>
-              <span id="generator-hint" class="muted">Approved requests only</span>
-            </div>
-
-            <form id="generator-form" class="stacked-form">
-              <label>
-                Approved student
-                <select id="generator-student" required></select>
-              </label>
-
-              <label>
-                Template
-                <select id="generator-template" required></select>
-              </label>
-
-              <label>
-                Issue date
-                <input id="generator-issued-on" type="date" />
-              </label>
-
-              <div class="form-actions">
-                <button type="submit" class="button primary">Generate Preview</button>
-                <button id="print-button" type="button" class="button ghost" disabled>Print</button>
-              </div>
-            </form>
-
-            <p id="preview-ref" class="muted">No preview generated yet.</p>
-            <iframe id="preview-frame" title="Certificate Preview"></iframe>
-          </section>
-
-          <section class="card card--wide" data-reveal>
-            <div class="card-head">
-              <div class="card-copy">
-                <p class="section-tag">Master Data</p>
-                <h2>Admin Managed Panels</h2>
-                <p class="card-text">
-                  Keep the internal datasets accurate so the student flow and certificate output
-                  remain consistent.
-                </p>
-              </div>
-            </div>
-
-            <div class="master-grid">
-              <div class="mini-card">
-                <h3>Branch & HOD</h3>
-                <form id="branch-form" class="stacked-form">
-                  <input name="code" type="text" placeholder="CSE" required />
-                  <input name="name" type="text" placeholder="Computer Science Engineering" required />
-                  <input name="hod_name" type="text" placeholder="HOD name" required />
-                  <input name="hod_email" type="email" placeholder="hod@tat.ac.in" required />
-                  <input name="hod_mobile" type="text" placeholder="9437000000" required />
-                  <input
-                    name="current_serial"
-                    type="number"
-                    min="0"
-                    placeholder="Starting serial number"
-                  />
-                  <input
-                    name="serial_year"
-                    type="number"
-                    min="2000"
-                    placeholder="Serial year e.g. 2026"
-                  />
-                  <button type="submit" class="button ghost">Save Branch</button>
-                </form>
-                <div id="branch-list" class="list-box"></div>
-              </div>
-
-              <div class="mini-card">
-                <h3>Academic Sessions</h3>
-                <form id="session-form" class="stacked-form">
-                  <input name="value" type="text" placeholder="2023-2027" required />
-                  <label class="checkbox">
-                    <input name="active" type="checkbox" checked />
-                    Active in student form
-                  </label>
-                  <button type="submit" class="button ghost">Save Session</button>
-                </form>
-                <div id="session-list" class="list-box"></div>
-              </div>
-
-              <div class="mini-card">
-                <h3>Duration Options</h3>
-                <form id="duration-form" class="stacked-form">
-                  <select name="cert_type" required>
-                    <option value="Internship">Internship</option>
-                    <option value="Apprenticeship">Apprenticeship</option>
-                  </select>
-                  <input name="label" type="text" placeholder="TWO MONTHS" required />
-                  <label class="checkbox">
-                    <input name="active" type="checkbox" checked />
-                    Active in student form
-                  </label>
-                  <button type="submit" class="button ghost">Save Duration</button>
-                </form>
-                <div id="duration-list" class="list-box"></div>
-              </div>
-
-              <div class="mini-card">
-                <h3>Company Directory</h3>
-                <form id="company-form" class="stacked-form">
-                  <input name="name" type="text" placeholder="TPCODL" required />
-                  <input name="hr_title" type="text" placeholder="Head HR" required />
-                  <textarea
-                    name="address"
-                    rows="4"
-                    placeholder="Corporate Office&#10;Power House Square&#10;Bhubaneswar"
-                    required
-                  ></textarea>
-                  <button type="submit" class="button ghost">Save Company</button>
-                </form>
-                <div id="company-list" class="list-box"></div>
-              </div>
-
-              <div class="mini-card">
-                <div class="mini-card-head">
-                  <h3>Templates</h3>
-                  <button id="prefill-template" type="button" class="text-button">
-                    Use current format
-                  </button>
+              <div class="stats-row mb-4" id="stats-summary" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0 2rem 0;">
+                <div class="card p-3 border-glass">
+                   <small class="muted uppercase ls-1">Validation Cache</small>
+                   <h3 id="stat-pending" style="color: var(--accent); margin: 0.5rem 0;">0</h3>
+                   <span class="small-label">Awaiting Review</span>
                 </div>
-                <form id="template-form" class="stacked-form">
-                  <input name="name" type="text" placeholder="TAT Internship Variant" required />
-                  <select id="template-type" name="type" required>
-                    <option value="Internship">Internship</option>
-                    <option value="Apprenticeship">Apprenticeship</option>
-                  </select>
-                  <label class="checkbox">
-                    <input name="active" type="checkbox" checked />
-                    Active template
-                  </label>
-                  <textarea
-                    id="template-content"
-                    name="content"
-                    rows="10"
-                    placeholder="HTML template with {{variables}}"
-                    required
-                  ></textarea>
-                  <button type="submit" class="button ghost">Save Template</button>
+                <div class="card p-3 border-glass">
+                   <small class="muted uppercase ls-1">Finalized Records</small>
+                   <h3 id="stat-completed" style="color: var(--success); margin: 0.5rem 0;">0</h3>
+                   <span class="small-label">Securely Issued</span>
+                </div>
+                <div class="card p-3 border-glass">
+                   <small class="muted uppercase ls-1">Branches Tracked</small>
+                   <h3 id="stat-branches" style="color: white; margin: 0.5rem 0;">0</h3>
+                   <span class="small-label">Operational Units</span>
+                </div>
+              </div>
+
+             <div class="filter-bar" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+               <select id="filter-status">
+                 <option value="">Status: All</option>
+                 <option value="Pending">Pending Validation</option>
+                 <option value="Approved">Approved State</option>
+                 <option value="Rejected">Flagged Rejected</option>
+                 <option value="Completed">Record Finalized</option>
+               </select>
+               <select id="filter-branch-applications">
+                 <option value="">Department: All</option>
+               </select>
+               <input type="text" id="filter-search" placeholder="Filter by name/ID..." style="flex: 1;" />
+             </div>
+
+             <div class="table-wrap">
+               <table>
+                 <thead>
+                   <tr>
+                     <th><input type="checkbox" class="select-all"></th>
+                     <th>Identity Profile</th>
+                     <th>Academic Branch</th>
+                     <th>Intake Date</th>
+                     <th>Validation Status</th>
+                     <th>Actions</th>
+                   </tr>
+                 </thead>
+                 <tbody id="requests-body"></tbody>
+               </table>
+             </div>
+
+             <div class="bulk-actions mt-10" style="display: flex; align-items: center; gap: 1rem;">
+                <span class="small muted">Bulk Protocol:</span>
+                <select id="bulk-action" class="small" style="width: auto;">
+                   <option value="">Select protocol...</option>
+                   <option value="approve">Batch Approve</option>
+                   <option value="reject">Batch Flag</option>
+                </select>
+             </div>
+          </section>
+
+          <!-- Generator Section -->
+          <section id="generator-section" class="card view-section" data-reveal>
+             <div class="card-head">
+                <span class="section-tag">Issuance Engine</span>
+                <h2>Certificate Terminal <span id="generator-hint" class="muted small" style="margin-left: 10px;">(Approved Requests Only)</span></h2>
+             </div>
+             <div class="page-grid">
+                <form id="generator-form" class="form-shell">
+                   <label>Validated Candidate ID <select id="generator-student" required></select></label>
+                   <label>Template Logic Mapping <select id="generator-template" required></select></label>
+                   <label>Standard Issuance Date <input id="generator-issued-on" type="date" required style="color-scheme: dark;" /></label>
+                   <button type="submit" class="button primary" style="border-radius: 999px;">Execute Generation Record</button>
                 </form>
-              </div>
-            </div>
+                <aside class="side-stack">
+                   <div style="background: rgba(0,0,0,0.2); border-radius: var(--radius-md); padding: 5px;">
+                      <iframe id="preview-frame" style="width: 100%; height: 400px; background: white; border-radius: 12px; border: none;" srcdoc="<p style='padding:40px; text-align:center;'>Terminal standby. Select records to generate document preview.</p>"></iframe>
+                      <div class="flex-between mt-10 p-10" style="display: flex; justify-content: space-between; padding: 10px;">
+                        <span id="preview-ref" class="small muted">REF: standby</span>
+                        <button id="print-button" class="button ghost small" disabled style="border-radius: 999px;"><i class="fas fa-print"></i> Send to Physical/PDF Output</button>
+                      </div>
+                   </div>
+                </aside>
+             </div>
           </section>
 
-          <section class="card" data-reveal>
+          <!-- Master Data Section -->
+          <section id="master-data-section" class="card view-section" data-reveal>
             <div class="card-head">
-              <div class="card-copy">
-                <p class="section-tag">Access</p>
-                <h2>Google Sign-In Requests</h2>
-              </div>
-              <span id="google-request-summary" class="muted">Loading...</span>
+              <span class="section-tag">Institutional Logic</span>
+              <h2>Master Data Core</h2>
             </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+              <div>
+                <h3 style="color: white; margin-bottom: 1rem;">Departments & HODs</h3>
+                <form id="branch-form" class="form-shell" style="gap: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 2rem; margin-bottom: 2rem;">
+                  <input name="code" placeholder="Branch Code (e.g. CSE)" required />
+                  <input name="name" placeholder="Full Branch Name" required />
+                  <input name="current_serial" type="number" placeholder="Starting Serial" required />
+                  <input name="serial_year" type="number" placeholder="Serial Year (e.g. 24)" required />
+                  <input name="hod_name" placeholder="HOD Name" required />
+                  <input name="hod_email" type="email" placeholder="HOD Email" required />
+                  <input name="hod_mobile" placeholder="HOD Contact" required />
+                  <button type="submit" class="button primary small">Save Branch Record</button>
+                </form>
+                <div id="branch-list"></div>
+              </div>
+              
+              <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div>
+                  <h3 style="color: white; margin-bottom: 1rem;">Companies / Organizations</h3>
+                  <form id="company-form" class="form-shell" style="gap: 1rem;">
+                    <input name="name" placeholder="Company Name" required />
+                    <input name="hr_title" placeholder="HR/Manager Title" required />
+                    <textarea name="address" rows="3" placeholder="Company Address" required></textarea>
+                     <button type="submit" class="button primary small">Save Company Record</button>
+                  </form>
+                  <div id="company-list" class="mt-10"></div>
+                </div>
 
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Email</th>
-                    <th>Status</th>
-                    <th>Requested</th>
-                    <th>Approved</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="google-users-body"></tbody>
-              </table>
+                <div>
+                   <h3 style="color: white; margin-bottom: 1rem;">Legacy Templates</h3>
+                   <form id="template-form" class="form-shell" style="gap: 1rem;">
+                      <input name="name" placeholder="Template Name" required />
+                      <select id="template-type" name="type" required>
+                         <option value="Internship">Internship</option>
+                         <option value="Apprenticeship">Apprenticeship</option>
+                      </select>
+                      <button id="prefill-template" type="button" class="button ghost small" style="display: none;">Prefill</button>
+                      <textarea id="template-content" name="content" rows="4" placeholder="HTML..." required></textarea>
+                      <label><input type="checkbox" name="active" checked> Active</label>
+                      <button type="submit" class="button primary small">Save Template</button>
+                   </form>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                  <div style="flex: 1;">
+                    <h3 style="color: white; margin-bottom: 1rem;">Sessions</h3>
+                    <form id="session-form" class="form-shell" style="gap: 1rem;">
+                      <input name="value" placeholder="2023-24" required />
+                      <button type="submit" class="button ghost small">Add</button>
+                    </form>
+                    <div id="session-list" class="mt-10"></div>
+                  </div>
+                  <div style="flex: 1;">
+                    <h3 style="color: white; margin-bottom: 1rem;">Durations</h3>
+                    <form id="duration-form" class="form-shell" style="gap: 1rem;">
+                       <select name="cert_type" required>
+                         <option value="Internship">Internship</option>
+                         <option value="Apprenticeship">Apprenticeship</option>
+                       </select>
+                       <input name="label" placeholder="4 Weeks" required />
+                       <button type="submit" class="button ghost small">Add</button>
+                    </form>
+                    <div id="duration-list" class="mt-10"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
-          <section class="card" data-reveal>
-            <div class="card-head">
-              <div class="card-copy">
-                <p class="section-tag">Logs</p>
-                <h2>Generated Certificates</h2>
-              </div>
-            </div>
-
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Ref No.</th>
-                    <th>Student</th>
-                    <th>Type</th>
-                    <th>Template</th>
-                    <th>Generated</th>
-                  </tr>
-                </thead>
-                <tbody id="log-body"></tbody>
-              </table>
-            </div>
+          <!-- Branch Contacts -->
+          <section id="branch-contacts-section" class="card view-section" data-reveal>
+             <div class="card-head">
+               <span class="section-tag">Identity</span>
+               <h2>Department Contact Directory</h2>
+             </div>
+             <form id="branch-contact-form" class="form-shell" style="margin-bottom: 2rem; gap: 1rem;">
+                <select name="branch_id" id="contact-branch-select" required></select>
+                <input name="contact_name" placeholder="Official Name" required />
+                <input name="designation" placeholder="Designation" required />
+                <input name="mobile_number" placeholder="Mobile Number" required />
+                <input name="email" type="email" placeholder="Email" />
+                <input name="priority" type="number" placeholder="Priority" value="1" />
+                <button type="submit" class="button primary">Save Contact</button>
+             </form>
+             <div id="branch-contact-list"></div>
           </section>
 
-          <section class="card card--wide" data-reveal>
-            <div class="card-head">
-              <div class="card-copy">
-                <p class="section-tag">Audit</p>
-                <h2>Admin Activity</h2>
-              </div>
-            </div>
+          <!-- System & Audit -->
+          <section id="audit-log-section" class="card view-section" data-reveal>
+             <div class="card-head">
+               <span class="section-tag">Security Logs</span>
+               <h2>Immutable Audit Trail</h2>
+             </div>
+             <div class="table-wrap">
+               <table>
+                 <thead>
+                   <tr><th>Actor</th><th>Action</th><th>Target</th><th>Details</th><th>Time</th></tr>
+                 </thead>
+                 <tbody id="audit-log-body"></tbody>
+               </table>
+             </div>
 
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Actor</th>
-                    <th>Action</th>
-                    <th>Target</th>
-                    <th>Details</th>
-                    <th>Time</th>
-                  </tr>
-                </thead>
-                <tbody id="audit-log-body"></tbody>
-              </table>
-            </div>
+             <div class="card-head mt-10" style="margin-top: 4rem;">
+               <h2>System Log</h2>
+             </div>
+             <div class="table-wrap">
+               <table>
+                 <thead>
+                   <tr><th>Ref No.</th><th>Student</th><th>Type</th><th>Template</th><th>Generated</th></tr>
+                 </thead>
+                 <tbody id="log-body"></tbody>
+               </table>
+             </div>
+             
+             <div class="card-head mt-10" style="margin-top: 4rem;">
+               <h2>Google Sign-in Approvals</h2>
+               <p id="google-request-summary" class="muted small">Loading...</p>
+             </div>
+             <div class="table-wrap">
+               <table>
+                 <thead>
+                   <tr><th>Email</th><th>Status</th><th>Requested</th><th>Approved</th><th>Action</th></tr>
+                 </thead>
+                 <tbody id="google-users-body"></tbody>
+               </table>
+             </div>
           </section>
-        </main>
-      </section>
+
+          <!-- Designer -->
+          <section id="template-designer-section" class="card view-section" data-reveal>
+             <div class="card-head">
+               <span class="section-tag">Phase 7.3 - Beast Architecture</span>
+               <h2>Smart Format & Form Engine</h2>
+               <p class="muted small">Write your certificate format using {{placeholders}}. The system will automatically build the student form.</p>
+             </div>
+             
+             <div class="page-grid mt-10" style="gap: 3rem;">
+               <div style="display: flex; flex-direction: column; gap: 2rem;">
+                  <form id="smart-template-form" class="form-shell">
+                     <input id="smart-template-name" placeholder="Format Name (e.g., Summer Internship 2024)" required />
+                     <select id="smart-template-type" required>
+                       <option value="Internship">Internship Training</option>
+                       <option value="Apprenticeship">Apprenticeship</option>
+                     </select>
+                     
+                     <label>
+                       Document Format (HTML)
+                       <textarea id="smart-template-html" rows="12" placeholder="This certifies that {{student_name}} completed a project on {{technology}}..." style="font-family: monospace; font-size: 0.9rem;" required></textarea>
+                     </label>
+
+                     <button type="button" id="btn-extract-fields" class="button secondary" style="border-radius: 999px;">
+                       <i class="fas fa-magic"></i> Extract Student Fields
+                     </button>
+
+                     <div id="smart-fields-container" class="card mt-10 hidden" style="background: rgba(0,0,0,0.2); border: 1px dashed var(--glass-border-bright); padding: 1.5rem;">
+                       <h3 style="font-size: 1rem; margin-bottom: 1rem;">Configure Student Form</h3>
+                       <div id="extracted-fields-list" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                     </div>
+
+                     <button type="submit" id="btn-save-smart-template" class="button primary hidden" style="border-radius: 999px;">
+                       <i class="fas fa-save"></i> Publish Smart Format
+                     </button>
+                  </form>
+               </div>
+
+               <div>
+                  <h3 style="color: white; margin-bottom: 1rem;">Format Preview (Static)</h3>
+                  <iframe id="template-v2-preview-frame" style="width: 100%; height: 500px; background: white; border-radius: 12px; border: none;"></iframe>
+               </div>
+             </div>
+          </section>
+
+          <!-- System Ops -->
+          <section id="system-section" class="card view-section" data-reveal>
+             <div class="card-head">
+                <span class="section-tag">Internal Core</span>
+                <h2>Architecture & Legacy</h2>
+             </div>
+             <div class="card" style="background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.2);">
+                <h3 style="color: var(--danger); font-size: 1.1rem; margin-bottom: 0.5rem;">Database Sync Protocol</h3>
+                <button id="btn-migrate-legacy" class="button secondary mt-10" style="background: var(--danger); color: white; border-radius: 999px;">Run Migration Protocol</button>
+             </div>
+          </section>
+
+        </section>
+      </main>
     </div>
 
+    <!-- Google Identity API -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script type="module" src="/site.js"></script>
     <script type="module" src="/admin.js"></script>
   </body>

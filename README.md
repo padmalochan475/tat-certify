@@ -1,22 +1,99 @@
-# TAT Certificate System
+# TAT Certificate System - Enhanced Architecture V2.0
 
-Dynamic certificate request and generation system for Trident Academy of Technology, prepared for free deployment on GitHub + Cloudflare Pages + D1.
+**Production-grade, enterprise-level, JSON-driven certificate automation platform** for Trident Academy of Technology.
 
-## What is included
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-orange)](https://pages.cloudflare.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-- Separate landing page, student form page, and admin login page
-- Student request flow with dynamic company selection or manual company entry
-- Admin-managed branches, HOD details, department serial starts, company directory, academic sessions, duration options, and templates
-- Approval flow that stores approved new companies for future student dropdown use
-- Admin-selected issue date for certificate generation, including backdated generation
-- Template-driven certificate generation for internship and apprenticeship letters
-- One-page content-only certificate layout reserved for pre-printed TAT letterhead
-- Reference number engine in the format `TAT/{BRANCH}/{SERIAL}/{YEAR}`
-- Academic year engine
-- Certificate log tracking
-- Cloudflare D1-backed CRUD architecture with strict validation
-- Optional Google Workspace admin sign-in restricted to `tat.ac.in`, with admin approval workflow
-- Audit log for login, approval, rejection, and certificate generation actions
+## 🎯 Vision
+
+Transform certificate generation into a **fully dynamic, no-code/low-code SaaS platform** where everything is configurable through JSON templates.
+
+## ✨ What's New in V2.0
+
+### 🚀 JSON-Driven Templates
+- **No hardcoding** - All templates stored as JSON
+- **Dynamic forms** - Auto-generated from template configuration
+- **Conditional logic** - Show/hide content based on data
+- **Version control** - Full template history with rollback
+
+### 📋 Application Management
+- **Workflow states** - draft → submitted → approved → processing → completed
+- **Status tracking** - Real-time application status
+- **Audit trail** - Complete history of all changes
+
+### 🔧 Full CRUD Operations
+- Templates, Applications, Branches, Companies, Sessions, Durations
+- Branch contacts for signature collection
+- Department-wise serial number management
+
+### 🎨 Template Features
+- Dynamic placeholder replacement (`{{variable}}`)
+- Conditional paragraphs (`if/then` logic)
+- QR code positioning (4 positions, configurable size)
+- Header modes (with/without letterhead)
+- Form field validation (min, max, pattern, email, phone, date)
+- Field types: text, textarea, dropdown, date, email, phone, number
+
+## 📚 Documentation
+
+- **[Phase 1 Implementation Guide](docs/PHASE1_IMPLEMENTATION.md)** - Complete implementation details
+- **[API Reference](docs/API_REFERENCE.md)** - All API endpoints with examples
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Production deployment steps
+- **[Architecture Design](plans/enhanced-architecture-v2.md)** - Complete system architecture
+
+## 🏗️ Architecture
+
+### Core Components
+
+1. **Template Engine** ([`src/services/templateEngine.ts`](src/services/templateEngine.ts))
+   - Renders JSON templates to HTML
+   - Placeholder replacement
+   - Conditional logic evaluation
+   - Form validation
+
+2. **Template Service** ([`src/services/templateService.ts`](src/services/templateService.ts))
+   - CRUD operations for templates
+   - Version management
+   - Template cloning
+   - Usage validation
+
+3. **API Layer** ([`functions/api/[[path]].ts`](functions/api/[[path]].ts))
+   - RESTful endpoints
+   - Authentication & authorization
+   - Input validation with Zod
+   - Audit logging
+
+4. **Database Layer** (Cloudflare D1)
+   - Templates, Applications, Certificates
+   - Master data (Branches, Companies, etc.)
+   - Audit logs, Version history
+
+## 🎯 Features
+
+### For Students
+- Select certificate type (Internship/Apprenticeship)
+- Dynamic form based on template
+- Real-time validation
+- Application status tracking
+- Certificate download
+
+### For Admins
+- Template management (create, edit, clone, preview)
+- Application approval workflow
+- Master data management
+- Certificate generation
+- Audit log viewing
+- Branch contact management
+
+### For Developers
+- Type-safe TypeScript
+- Zod schema validation
+- RESTful API
+- JSON-driven configuration
+- Version control
+- Extensible architecture
 
 ## Stack
 

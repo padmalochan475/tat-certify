@@ -1,774 +1,452 @@
 const state = {
   adminUsers: [],
   auditLog: [],
-  students: [],
   branches: [],
   companies: [],
   sessions: [],
   durations: [],
   templates: [],
   certificateLog: [],
-  googleConfig: null
+  googleConfig: null,
+  applications: [],
+  branchContacts: [],
+  templatesV2: [],
 }
 
-const elements = {
-  flash: document.querySelector("#admin-flash"),
-  loginCard: document.querySelector("#login-card"),
-  loginForm: document.querySelector("#login-form"),
-  googleLoginPanel: document.querySelector("#google-login-panel"),
-  googleLoginButton: document.querySelector("#google-login-button"),
-  googleLoginNote: document.querySelector("#google-login-note"),
-  dashboard: document.querySelector("#dashboard"),
-  refreshButton: document.querySelector("#refresh-admin"),
-  logoutButton: document.querySelector("#logout-button"),
-  requestsBody: document.querySelector("#requests-body"),
-  requestSummary: document.querySelector("#request-summary"),
-  generatorForm: document.querySelector("#generator-form"),
-  generatorStudent: document.querySelector("#generator-student"),
-  generatorTemplate: document.querySelector("#generator-template"),
-  generatorIssuedOn: document.querySelector("#generator-issued-on"),
-  generatorHint: document.querySelector("#generator-hint"),
-  previewFrame: document.querySelector("#preview-frame"),
-  previewRef: document.querySelector("#preview-ref"),
-  printButton: document.querySelector("#print-button"),
-  googleRequestSummary: document.querySelector("#google-request-summary"),
-  googleUsersBody: document.querySelector("#google-users-body"),
-  branchForm: document.querySelector("#branch-form"),
-  sessionForm: document.querySelector("#session-form"),
-  durationForm: document.querySelector("#duration-form"),
-  companyForm: document.querySelector("#company-form"),
-  templateForm: document.querySelector("#template-form"),
-  templateType: document.querySelector("#template-type"),
-  templateContent: document.querySelector("#template-content"),
-  prefillTemplate: document.querySelector("#prefill-template"),
-  branchList: document.querySelector("#branch-list"),
-  sessionList: document.querySelector("#session-list"),
-  durationList: document.querySelector("#duration-list"),
-  companyList: document.querySelector("#company-list"),
-  logBody: document.querySelector("#log-body"),
-  auditLogBody: document.querySelector("#audit-log-body")
-}
-
+let elements = {}
 let flashTimer = null
 let googleScriptPromise = null
+let extractedPlaceholders = []
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;")
+function initializeElements() {
+  const selectors = {
+    flash: "#admin-flash",
+    loginCard: "#login-card",
+    loginForm: "#login-form",
+    googleLoginPanel: "#google-login-panel",
+    googleLoginButton: "#google-login-button",
+    googleLoginNote: "#google-login-note",
+    dashboard: "#dashboard",
+    refreshButton: "#refresh-admin",
+    logoutButton: "#logout-button",
+    requestsBody: "#requests-body",
+    requestSummary: "#request-summary",
+    generatorForm: "#generator-form",
+    generatorStudent: "#generator-student",
+    generatorTemplate: "#generator-template",
+    generatorIssuedOn: "#generator-issued-on",
+    generatorHint: "#generator-hint",
+    previewFrame: "#preview-frame",
+    previewRef: "#preview-ref",
+    printButton: "#print-button",
+    googleUsersBody: "#google-users-body",
+    googleRequestSummary: "#google-request-summary",
+    branchForm: "#branch-form",
+    sessionForm: "#session-form",
+    durationForm: "#duration-form",
+    companyForm: "#company-form",
+    branchList: "#branch-list",
+    sessionList: "#session-list",
+    durationList: "#duration-list",
+    companyList: "#company-list",
+    auditLogBody: "#audit-log-body",
+    filterStatus: "#filter-status",
+    filterBranchApplications: "#filter-branch-applications",
+    filterSearch: "#filter-search",
+    bulkAction: "#bulk-action",
+    selectAll: ".select-all",
+    smartTemplateForm: "#smart-template-form",
+    smartTemplateName: "#smart-template-name",
+    smartTemplateType: "#smart-template-type",
+    smartTemplateHtml: "#smart-template-html",
+    btnExtractFields: "#btn-extract-fields",
+    smartFieldsContainer: "#smart-fields-container",
+    extractedFieldsList: "#extracted-fields-list",
+    btnSaveSmartTemplate: "#btn-save-smart-template",
+    designerFrame: "#template-v2-preview-frame",
+    branchContactForm: "#branch-contact-form",
+    branchContactList: "#branch-contact-list"
+  };
+
+  for (const [key, selector] of Object.entries(selectors)) {
+    elements[key] = document.querySelector(selector);
+  }
 }
 
+function escapeHtml(v) { return String(v || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;"); }
+
 function showFlash(message, tone = "info") {
-  clearTimeout(flashTimer)
-  elements.flash.hidden = false
-  elements.flash.className = `flash ${tone}`
-  elements.flash.textContent = message
-  flashTimer = window.setTimeout(() => {
-    elements.flash.hidden = true
-  }, 4200)
+  console.log(`Flash [${tone}]: ${message}`);
+  if (!elements.flash) { alert(message); return; }
+  clearTimeout(flashTimer);
+  elements.flash.hidden = false;
+  elements.flash.className = `flash ${tone}`;
+  elements.flash.textContent = message;
+  flashTimer = setTimeout(() => { elements.flash.hidden = true }, 5000);
 }
 
 async function request(url, options = {}) {
   const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {})
-    },
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options
-  })
-
-  const contentType = response.headers.get("content-type") || ""
-  const body = contentType.includes("application/json") ? await response.json() : null
-
-  if (!response.ok) {
-    const message =
-      body?.message || (Array.isArray(body?.issues) ? body.issues.join(", ") : "Request failed")
-    throw new Error(message)
-  }
-
-  return body
+  });
+  const body = (response.headers.get("content-type") || "").includes("application/json") ? await response.json() : null;
+  if (!response.ok) throw new Error(body?.message || `Terminal Protocol Error: ${response.status}`);
+  return body;
 }
 
-function loadGoogleIdentityScript() {
-  if (window.google?.accounts?.id) {
-    return Promise.resolve(window.google)
-  }
-
-  if (googleScriptPromise) {
-    return googleScriptPromise
-  }
-
-  googleScriptPromise = new Promise((resolve, reject) => {
-    const script = document.createElement("script")
-    script.src = "https://accounts.google.com/gsi/client"
-    script.async = true
-    script.defer = true
-    script.onload = () => resolve(window.google)
-    script.onerror = () => reject(new Error("Unable to load Google Sign-In"))
-    document.head.append(script)
-  })
-
-  return googleScriptPromise
-}
-
-function approvedStudents() {
-  return state.students.filter((student) => student.status === "Approved")
-}
-
-function activeTemplatesForType(type) {
-  return state.templates.filter((template) => template.active && template.type === type)
-}
-
-function baseTemplateContent(type) {
-  return (
-    state.templates.find((template) => template.active && template.type === type)?.content || ""
-  )
-}
-
-function formatDateTime(value) {
-  return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(
-    new Date(value)
-  )
-}
+function formatDateTime(v) { return v ? new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(v)) : "N/A"; }
 
 function toggleAuthenticated(isAuthenticated) {
-  elements.loginCard.classList.toggle("hidden", isAuthenticated)
-  elements.dashboard.classList.toggle("hidden", !isAuthenticated)
-  window.requestAnimationFrame(() => {
-    document.dispatchEvent(new Event("ui:refresh-reveal"))
-  })
-}
-
-async function handleGoogleCredential(response) {
-  if (!response?.credential) {
-    throw new Error("Google login did not return a credential")
+  if (elements.loginCard) elements.loginCard.classList.toggle("hidden", isAuthenticated);
+  if (elements.dashboard) elements.dashboard.classList.toggle("hidden", !isAuthenticated);
+  document.querySelector("#admin-header-actions")?.classList.toggle("hidden", !isAuthenticated);
+  if (isAuthenticated) {
+      loadBootstrap().catch(e => showFlash(e.message, "error"));
+      loadGoogleLogin().catch(() => {});
   }
-
-  const result = await request("/api/admin/google-login", {
-    method: "POST",
-    body: JSON.stringify({
-      credential: response.credential,
-      client_id: state.googleConfig?.clientId
-    })
-  })
-
-  toggleAuthenticated(true)
-  showFlash(`Signed in as ${result.username}`, "success")
-  await loadBootstrap()
-}
-
-async function loadGoogleLogin() {
-  const config = await request("/api/admin/google/config")
-  state.googleConfig = config
-  elements.googleLoginPanel.classList.remove("hidden")
-  elements.googleLoginButton.innerHTML = ""
-
-  if (!config.enabled) {
-    elements.googleLoginNote.textContent =
-      "Google Workspace sign-in is not configured in backend deployment settings yet."
-    elements.googleLoginButton.innerHTML =
-      '<button type="button" class="button ghost" disabled>Google Sign-In Not Configured</button>'
-    return
-  }
-
-  elements.googleLoginNote.textContent = `Sign in with your ${config.hostedDomain} Google Workspace account. First use creates an approval request for an existing admin.`
-
-  const google = await loadGoogleIdentityScript()
-  google.accounts.id.initialize({
-    client_id: config.clientId,
-    callback: (response) =>
-      handleGoogleCredential(response).catch((error) => showFlash(error.message, "error"))
-  })
-  elements.googleLoginButton.innerHTML = ""
-  google.accounts.id.renderButton(elements.googleLoginButton, {
-    theme: "outline",
-    size: "large",
-    shape: "pill",
-    text: "continue_with",
-    width: 320
-  })
-}
-
-function renderRequests() {
-  const pending = state.students.filter((student) => student.status === "Pending").length
-  const approved = state.students.filter((student) => student.status === "Approved").length
-  elements.requestSummary.textContent = `${pending} pending, ${approved} approved`
-
-  if (state.students.length === 0) {
-    elements.requestsBody.innerHTML =
-      '<tr><td colspan="5" class="empty-row">No student requests yet.</td></tr>'
-    return
-  }
-
-  elements.requestsBody.innerHTML = state.students
-    .map((student) => {
-      const badgeClass = student.status === "Approved" ? "approved" : "pending"
-      const actions =
-        student.status === "Pending"
-          ? `
-            <div class="table-actions">
-              <button class="button ghost" type="button" data-action="approve" data-id="${student.id}">Approve</button>
-              <button class="button secondary" type="button" data-action="reject" data-id="${student.id}">Remove</button>
-            </div>
-          `
-          : `
-            <div class="table-actions">
-              <button class="button ghost" type="button" data-action="prepare-generate" data-id="${student.id}">Generate</button>
-            </div>
-          `
-
-      return `
-        <tr>
-          <td>
-            <strong>${escapeHtml(student.full_name)}</strong><br />
-            <span class="muted">${escapeHtml(student.reg_no)} | ${escapeHtml(student.branch)}</span><br />
-            <span class="muted">${escapeHtml(student.year)} | ${escapeHtml(student.session)}</span>
-          </td>
-          <td>
-            <strong>${escapeHtml(student.company)}</strong><br />
-            <span class="muted">${escapeHtml(student.company_hr_title)}</span><br />
-            <span class="muted">${escapeHtml(student.company_address).replaceAll("\n", "<br />")}</span>
-          </td>
-          <td>
-            ${escapeHtml(student.cert_type)}<br />
-            <span class="muted">${escapeHtml(student.duration)} from ${escapeHtml(student.start_date)}</span>
-          </td>
-          <td><span class="badge ${badgeClass}">${escapeHtml(student.status)}</span></td>
-          <td>${actions}</td>
-        </tr>
-      `
-    })
-    .join("")
-}
-
-function renderGoogleUsers() {
-  const pending = state.adminUsers.filter((user) => user.status === "Pending").length
-  const approved = state.adminUsers.filter((user) => user.status === "Approved").length
-  elements.googleRequestSummary.textContent = `${pending} pending, ${approved} approved`
-
-  if (state.adminUsers.length === 0) {
-    elements.googleUsersBody.innerHTML =
-      '<tr><td colspan="5" class="empty-row">No Google sign-in requests yet.</td></tr>'
-    return
-  }
-
-  elements.googleUsersBody.innerHTML = state.adminUsers
-    .map((user) => {
-      const badgeClass = user.status === "Approved" ? "approved" : "pending"
-      const actions =
-        user.status === "Pending"
-          ? `
-            <div class="table-actions">
-              <button class="button ghost" type="button" data-google-action="approve" data-id="${user.id}">Approve</button>
-              <button class="button secondary" type="button" data-google-action="remove" data-id="${user.id}">Remove</button>
-            </div>
-          `
-          : `
-            <div class="table-actions">
-              <button class="button secondary" type="button" data-google-action="remove" data-id="${user.id}">Remove</button>
-            </div>
-          `
-
-      return `
-        <tr>
-          <td>
-            <strong>${escapeHtml(user.email)}</strong><br />
-            <span class="muted">${escapeHtml(user.auth_provider)}</span>
-          </td>
-          <td><span class="badge ${badgeClass}">${escapeHtml(user.status)}</span></td>
-          <td>${escapeHtml(formatDateTime(user.created_at))}</td>
-          <td>${user.approved_at ? escapeHtml(formatDateTime(user.approved_at)) : '<span class="muted">Not approved</span>'}</td>
-          <td>${actions}</td>
-        </tr>
-      `
-    })
-    .join("")
-}
-
-function populateGenerator(preferredStudentId = "", preferredTemplateId = "") {
-  const approved = approvedStudents()
-  elements.generatorStudent.innerHTML =
-    '<option value="">Select approved student</option>' +
-    approved
-      .map(
-        (student) =>
-          `<option value="${escapeHtml(student.id)}"${
-            student.id === preferredStudentId ? " selected" : ""
-          }>${escapeHtml(student.full_name)} (${escapeHtml(student.reg_no)})</option>`
-      )
-      .join("")
-
-  const student = approved.find((entry) => entry.id === elements.generatorStudent.value)
-
-  if (!student) {
-    elements.generatorTemplate.innerHTML = '<option value="">Select template</option>'
-    elements.generatorHint.textContent = "Approve a request to enable certificate generation"
-    return
-  }
-
-  const templates = activeTemplatesForType(student.cert_type)
-  elements.generatorTemplate.innerHTML =
-    '<option value="">Select template</option>' +
-    templates
-      .map(
-        (template) =>
-          `<option value="${escapeHtml(template.id)}"${
-            template.id === preferredTemplateId ? " selected" : ""
-          }>${escapeHtml(template.name)}</option>`
-      )
-      .join("")
-
-  elements.generatorHint.textContent = `${student.cert_type} templates for ${student.full_name}`
-}
-
-function renderList(container, items) {
-  if (items.length === 0) {
-    container.innerHTML = '<div class="list-item"><p>No records yet.</p></div>'
-    return
-  }
-
-  container.innerHTML = items.join("")
-}
-
-function renderMasterLists() {
-  renderList(
-    elements.branchList,
-    state.branches.map(
-      (branch) => `
-        <div class="list-item">
-          <div>
-            <strong>${escapeHtml(branch.code)} - ${escapeHtml(branch.name)}</strong>
-            <p>${escapeHtml(branch.hod_name)} | ${escapeHtml(branch.hod_email)} | ${escapeHtml(branch.hod_mobile)}</p>
-            <p>Serial starts from ${escapeHtml(branch.current_serial)} for ${escapeHtml(branch.serial_year)}</p>
-          </div>
-          <button class="button secondary" type="button" data-list-action="delete-branch" data-value="${escapeHtml(branch.code)}">Delete</button>
-        </div>
-      `
-    )
-  )
-
-  renderList(
-    elements.sessionList,
-    state.sessions.map(
-      (session) => `
-        <div class="list-item">
-          <div>
-            <strong>${escapeHtml(session.value)}</strong>
-            <p>${session.active ? "Visible in student form" : "Hidden from student form"}</p>
-          </div>
-          <button class="button secondary" type="button" data-list-action="delete-session" data-value="${escapeHtml(session.value)}">Delete</button>
-        </div>
-      `
-    )
-  )
-
-  renderList(
-    elements.durationList,
-    state.durations.map(
-      (duration) => `
-        <div class="list-item">
-          <div>
-            <strong>${escapeHtml(duration.cert_type)} - ${escapeHtml(duration.label)}</strong>
-            <p>${duration.active ? "Visible in student form" : "Hidden from student form"}</p>
-          </div>
-          <button class="button secondary" type="button" data-list-action="delete-duration" data-value="${escapeHtml(duration.id)}">Delete</button>
-        </div>
-      `
-    )
-  )
-
-  renderList(
-    elements.companyList,
-    state.companies.map(
-      (company) => `
-        <div class="list-item">
-          <div>
-            <strong>${escapeHtml(company.name)}</strong>
-            <p>${escapeHtml(company.hr_title)}</p>
-            <p>${escapeHtml(company.address).replaceAll("\n", "<br />")}</p>
-          </div>
-          <button class="button secondary" type="button" data-list-action="delete-company" data-value="${escapeHtml(company.name)}">Delete</button>
-        </div>
-      `
-    )
-  )
-}
-
-function renderLogs() {
-  if (state.certificateLog.length === 0) {
-    elements.logBody.innerHTML =
-      '<tr><td colspan="5" class="empty-row">No certificates generated yet.</td></tr>'
-    return
-  }
-
-  elements.logBody.innerHTML = state.certificateLog
-    .map(
-      (entry) => `
-        <tr>
-          <td>${escapeHtml(entry.ref_no)}<br /><span class="muted">${escapeHtml(
-            entry.academic_year
-          )}</span></td>
-          <td><strong>${escapeHtml(entry.student_name)}</strong><br /><span class="muted">${escapeHtml(
-            entry.reg_no
-          )}</span></td>
-          <td>${escapeHtml(entry.cert_type)}</td>
-          <td>${escapeHtml(entry.template_name)}</td>
-          <td>${escapeHtml(
-            formatDateTime(entry.generated_on)
-          )}</td>
-        </tr>
-      `
-    )
-    .join("")
-}
-
-function renderAuditLog() {
-  if (state.auditLog.length === 0) {
-    elements.auditLogBody.innerHTML =
-      '<tr><td colspan="5" class="empty-row">No admin activity recorded yet.</td></tr>'
-    return
-  }
-
-  elements.auditLogBody.innerHTML = state.auditLog
-    .map((entry) => {
-      let detailsText = ""
-      if (entry.details) {
-        try {
-          const parsed = JSON.parse(entry.details)
-          detailsText = Object.entries(parsed)
-            .map(([key, value]) => `${key}: ${value}`)
-            .join(" | ")
-        } catch {
-          detailsText = entry.details
-        }
-      }
-
-      return `
-        <tr>
-          <td><strong>${escapeHtml(entry.actor_email)}</strong><br /><span class="muted">${escapeHtml(entry.actor_method)}</span></td>
-          <td>${escapeHtml(entry.action)}</td>
-          <td>${escapeHtml(entry.target_type)}<br /><span class="muted">${escapeHtml(entry.target_id)}</span></td>
-          <td>${detailsText ? escapeHtml(detailsText) : '<span class="muted">No details</span>'}</td>
-          <td>${escapeHtml(formatDateTime(entry.created_at))}</td>
-        </tr>
-      `
-    })
-    .join("")
-}
-
-function syncTemplateDraft(force = false) {
-  if (!force && elements.templateContent.value.trim()) {
-    return
-  }
-
-  const content = baseTemplateContent(elements.templateType.value)
-  if (content) {
-    elements.templateContent.value = content
-  }
-}
-
-async function loadBootstrap() {
-  const selectedStudentId = elements.generatorStudent.value
-  const selectedTemplateId = elements.generatorTemplate.value
-  const data = await request("/api/admin/bootstrap")
-
-  state.adminUsers = data.adminUsers
-  state.auditLog = data.auditLog
-  state.students = data.students
-  state.branches = data.branches
-  state.companies = data.companies
-  state.sessions = data.sessions
-  state.durations = data.durations
-  state.templates = data.templates
-  state.certificateLog = data.certificateLog
-
-  renderRequests()
-  renderGoogleUsers()
-  populateGenerator(selectedStudentId, selectedTemplateId)
-  renderMasterLists()
-  renderLogs()
-  renderAuditLog()
-  syncTemplateDraft(false)
 }
 
 async function checkSession() {
-  const session = await request("/api/admin/session")
-  toggleAuthenticated(session.authenticated)
-  if (session.authenticated) {
-    await loadBootstrap()
+  try {
+    const session = await request("/api/admin/session")
+    toggleAuthenticated(session.authenticated)
+  } catch (err) { toggleAuthenticated(false); }
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const payload = Object.fromEntries(new FormData(elements.loginForm).entries());
+  try {
+    await request("/api/admin/login", { method: "POST", body: JSON.stringify(payload) });
+    showFlash("Authentication Sequence Complete.", "success");
+    toggleAuthenticated(true);
+  } catch (err) { showFlash(err.message, "error"); }
+}
+
+async function loadBootstrap() {
+  const data = await request("/api/admin/bootstrap");
+  Object.assign(state, data);
+  renderInbox();
+  renderMasterLists();
+  renderAuditLog();
+  renderGoogleUsers();
+  renderBranchContacts();
+  populateGenerator();
+  
+  if (elements.filterBranchApplications) {
+      elements.filterBranchApplications.innerHTML = '<option value="all">Department: All</option>' + 
+          state.branches.map(b => `<option value="${b.code}">${b.name}</option>`).join("");
   }
 }
 
-async function handleLogin(event) {
-  event.preventDefault()
-  const payload = Object.fromEntries(new FormData(elements.loginForm).entries())
-  await request("/api/admin/login", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  elements.loginForm.reset()
-  toggleAuthenticated(true)
-  showFlash("Admin login successful.", "success")
-  await loadBootstrap()
+function renderInbox() {
+  if (!elements.requestsBody) return;
+  const sFilter = elements.filterStatus?.value || '';
+  const bFilter = elements.filterBranchApplications?.value || 'all';
+  const search = elements.filterSearch?.value?.toLowerCase() || '';
+
+  const filtered = state.applications.filter(app => {
+    const matchS = !sFilter || app.status.toLowerCase() === sFilter.toLowerCase();
+    const matchB = bFilter === 'all' || app.branch_id === bFilter;
+    const matchSearch = !search || app.student_name.toLowerCase().includes(search) || app.reg_no.toLowerCase().includes(search);
+    return matchS && matchB && matchSearch;
+  });
+
+  const pending = state.applications.filter(a => ['submitted', 'pending'].includes(a.status.toLowerCase())).length;
+  const completed = state.applications.filter(a => a.status.toLowerCase() === 'completed').length;
+  
+  if (elements.requestSummary) elements.requestSummary.textContent = `${pending} applications currently awaiting institutional review.`;
+  if (document.querySelector("#stat-pending")) document.querySelector("#stat-pending").textContent = pending;
+  if (document.querySelector("#stat-completed")) document.querySelector("#stat-completed").textContent = completed;
+  if (document.querySelector("#stat-branches")) document.querySelector("#stat-branches").textContent = state.branches.length;
+
+  elements.requestsBody.innerHTML = filtered.length ? filtered.map(app => `
+    <tr>
+      <td><input type="checkbox" class="bulk-check" value="${app.id}"></td>
+      <td><strong>${escapeHtml(app.student_name)}</strong><br><small class="muted">${escapeHtml(app.reg_no)}</small></td>
+      <td>${escapeHtml(app.branch_id)}</td>
+      <td>${escapeHtml(app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A')}</td>
+      <td><span class="badge badge-${app.status.toLowerCase()}">${app.status}</span></td>
+      <td>
+        <div class="table-actions">
+          ${['submitted', 'pending'].includes(app.status.toLowerCase()) ? `
+            <button class="button small ghost" data-action="approve" data-id="${app.id}">Approve</button>
+            <button class="button small secondary" data-action="reject" data-id="${app.id}">Reject</button>
+          ` : ''}
+          ${app.status.toLowerCase() === 'approved' ? `<button class="button small ghost" data-action="prepare" data-id="${app.id}">Execute</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join("") : '<tr><td colspan="6" class="empty-row">Filter criteria returned zero records.</td></tr>';
 }
 
-async function handleLogout() {
-  await request("/api/admin/logout", { method: "POST" })
-  window.google?.accounts?.id?.disableAutoSelect?.()
-  toggleAuthenticated(false)
-  elements.previewFrame.srcdoc = ""
-  elements.previewRef.textContent = "No preview generated yet."
-  elements.printButton.disabled = true
-  showFlash("Logged out.", "info")
+function renderMasterLists() {
+  if (elements.branchList) elements.branchList.innerHTML = state.branches.map(b => `<div class="list-item"><div><strong>${b.code}</strong> - ${b.name}</div><button class="button small secondary" data-action="delete-branch" data-id="${b.code}"><i class="fas fa-trash"></i></button></div>`).join("");
+  if (elements.sessionList) elements.sessionList.innerHTML = state.sessions.map(s => `<div class="list-item"><div><strong>${s.value}</strong> ${s.active ? '(Active)' : '(Hidden)'}</div><button class="button small secondary" data-action="delete-session" data-id="${s.value}"><i class="fas fa-trash"></i></button></div>`).join("");
+  if (elements.companyList) elements.companyList.innerHTML = state.companies.map(c => `<div class="list-item"><div><strong>${c.name}</strong><br><small>${c.hr_title}</small></div><button class="button small secondary" data-action="delete-company" data-id="${c.name}"><i class="fas fa-trash"></i></button></div>`).join("");
 }
 
-async function handleRequestAction(event) {
-  const target = event.target.closest("button[data-action]")
-  if (!target) {
-    return
-  }
-
-  const action = target.dataset.action
-  const studentId = target.dataset.id
-
-  if (action === "approve") {
-    await request(`/api/admin/students/${studentId}/approve`, { method: "PATCH" })
-    showFlash("Request approved and company directory updated.", "success")
-    await loadBootstrap()
-    return
-  }
-
-  if (action === "reject") {
-    await request(`/api/admin/students/${studentId}`, { method: "DELETE" })
-    showFlash("Request removed.", "info")
-    await loadBootstrap()
-    return
-  }
-
-  if (action === "prepare-generate") {
-    elements.generatorStudent.value = studentId
-    populateGenerator(studentId)
-    elements.generatorForm.scrollIntoView({ behavior: "smooth", block: "start" })
-  }
+function renderAuditLog() {
+  if (!elements.auditLogBody) return;
+  elements.auditLogBody.innerHTML = state.auditLog.map(l => `<tr><td>${escapeHtml(l.actor_email)}</td><td>${l.action}</td><td>${l.target_type}</td><td><code>${escapeHtml(l.details)}</code></td><td>${formatDateTime(l.created_at)}</td></tr>`).join("");
 }
 
-async function handleGoogleUserAction(event) {
-  const target = event.target.closest("button[data-google-action]")
-  if (!target) {
-    return
-  }
-
-  const action = target.dataset.googleAction
-  const userId = target.dataset.id
-
-  if (action === "approve") {
-    await request(`/api/admin/google-users/${userId}/approve`, { method: "PATCH" })
-    showFlash("Google sign-in request approved.", "success")
-    await loadBootstrap()
-    return
-  }
-
-  if (action === "remove") {
-    await request(`/api/admin/google-users/${userId}`, { method: "DELETE" })
-    showFlash("Google sign-in request removed.", "info")
-    await loadBootstrap()
-  }
+function renderGoogleUsers() {
+  if (!elements.googleUsersBody) return;
+  const pending = state.adminUsers.filter(u => u.status === 'Pending').length;
+  if (elements.googleRequestSummary) elements.googleRequestSummary.textContent = `${pending} access requests pending institutional review.`;
+  elements.googleUsersBody.innerHTML = state.adminUsers.map(u => `<tr><td><strong>${u.email}</strong></td><td><span class="badge ${u.status.toLowerCase()}">${u.status}</span></td><td>${formatDateTime(u.created_at)}</td><td>${formatDateTime(u.approved_at)}</td><td>${u.status === 'Pending' ? `<button class="button small ghost" data-action="approve-google" data-id="${u.id}">Grant Access</button>` : ''}</td></tr>`).join("");
 }
 
-async function handleListAction(event) {
-  const target = event.target.closest("button[data-list-action]")
-  if (!target) {
-    return
-  }
-
-  const action = target.dataset.listAction
-  const value = encodeURIComponent(target.dataset.value)
-
-  if (action === "delete-branch") {
-    await request(`/api/admin/branches/${value}`, { method: "DELETE" })
-    showFlash("Branch deleted.", "info")
-  } else if (action === "delete-session") {
-    await request(`/api/admin/sessions/${value}`, { method: "DELETE" })
-    showFlash("Academic session deleted.", "info")
-  } else if (action === "delete-duration") {
-    await request(`/api/admin/durations/${value}`, { method: "DELETE" })
-    showFlash("Duration option deleted.", "info")
-  } else if (action === "delete-company") {
-    await request(`/api/admin/companies/${value}`, { method: "DELETE" })
-    showFlash("Company deleted.", "info")
-  }
-
-  await loadBootstrap()
+function renderBranchContacts() {
+  if (!elements.branchContactList) return;
+  elements.branchContactList.innerHTML = state.branchContacts.map(c => `<div class="card p-3 mb-2" style="border-left: 4px solid var(--accent);"><div class="flex-between"><div><strong>${c.contact_name}</strong> - ${c.designation}<br><small>${c.branch_id} | ${c.mobile_number}</small></div><button class="button small secondary" data-action="delete-contact" data-id="${c.id}">Remove</button></div></div>`).join("");
 }
 
-async function handleBranchSubmit(event) {
-  event.preventDefault()
-  const payload = Object.fromEntries(new FormData(elements.branchForm).entries())
-  if (payload.current_serial === "") {
-    delete payload.current_serial
-  } else {
-    payload.current_serial = Number(payload.current_serial)
-  }
-  if (payload.serial_year === "") {
-    delete payload.serial_year
-  } else {
-    payload.serial_year = Number(payload.serial_year)
-  }
-  await request("/api/admin/branches", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  elements.branchForm.reset()
-  showFlash("Branch saved.", "success")
-  await loadBootstrap()
+function populateGenerator(id = "") {
+  if (!elements.generatorStudent) return;
+  const approved = state.applications.filter(a => a.status.toLowerCase() === 'approved');
+  elements.generatorStudent.innerHTML = '<option value="">Select Candidate Profile</option>' + approved.map(a => `<option value="${a.id}" ${a.id === id ? 'selected' : ''}>${a.student_name} (${a.reg_no})</option>`).join("");
+  const temps = [...state.templates, ...state.templatesV2].filter(t => t.active);
+  elements.generatorTemplate.innerHTML = '<option value="">Select Certificate Logic</option>' + temps.map(t => `<option value="${t.id}">${t.name} [${t.type}]</option>`).join("");
 }
 
-async function handleSessionSubmit(event) {
-  event.preventDefault()
-  const formData = new FormData(elements.sessionForm)
-  const payload = Object.fromEntries(formData.entries())
-  payload.active = formData.get("active") === "on"
-  await request("/api/admin/sessions", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  elements.sessionForm.reset()
-  showFlash("Academic session saved.", "success")
-  await loadBootstrap()
+async function handleAction(e) {
+  const btn = e.target.closest("button[data-action]");
+  if (!btn) return;
+  const { action, id } = btn.dataset;
+  try {
+    if (action === "approve") { 
+      await request(`/api/admin/applications/${id}`, { method: "PUT", body: JSON.stringify({ status: "approved" }) });
+      showFlash("Application Authorized.", "success");
+    } else if (action === "reject") {
+      const reason = prompt("Enter Protocol Violation / Rejection Reason:");
+      if (reason) await request(`/api/admin/applications/${id}`, { method: "PUT", body: JSON.stringify({ status: "rejected", rejection_reason: reason }) });
+      showFlash("Application Flagged and Rejected.", "warning");
+    } else if (action === "prepare") {
+      populateGenerator(id);
+      document.querySelector('[data-section="generator-section"]').click();
+    } else if (action === "delete-branch") {
+      if (confirm("Permanently wipe branch record?")) await request(`/api/admin/branches/${id}`, { method: "DELETE" });
+    } else if (action === "delete-session") {
+       if (confirm("Scrub academic session?")) await request(`/api/admin/sessions/${id}`, { method: "DELETE" });
+    } else if (action === "delete-company") {
+       if (confirm("Remove organization from directory?")) await request(`/api/admin/companies/${id}`, { method: "DELETE" });
+    } else if (action === "delete-contact") {
+       if (confirm("Wipe registry contact?")) await request(`/api/admin/branch-contacts/${id}`, { method: "DELETE" });
+    } else if (action === "approve-google") {
+       await request(`/api/admin/google-users/${id}/approve`, { method: "PATCH" });
+       showFlash("Google Workspace Access Granted.", "success");
+    }
+    await loadBootstrap();
+  } catch(err) { showFlash(err.message, "error"); }
 }
 
-async function handleDurationSubmit(event) {
-  event.preventDefault()
-  const formData = new FormData(elements.durationForm)
-  const payload = Object.fromEntries(formData.entries())
-  payload.active = formData.get("active") === "on"
-  await request("/api/admin/durations", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  elements.durationForm.reset()
-  showFlash("Duration option saved.", "success")
-  await loadBootstrap()
+async function handleGenerate(e) {
+  e.preventDefault();
+  const payload = { 
+    application_id: elements.generatorStudent.value, 
+    template_id: elements.generatorTemplate.value,
+    issue_date: elements.generatorIssuedOn.value
+  };
+  try {
+    const res = await request("/api/admin/certificates/generate", { method: "POST", body: JSON.stringify(payload) });
+    showFlash(res.message, "success");
+    elements.previewFrame.srcdoc = `<html><body style="background:#0f172a; color:#94a3b8; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; text-align:center;"><div><h2 style="color:white; margin-bottom:1rem;">Rendering Certificate</h2><p>Mapping database variables to secure format blueprint...</p></div></body></html>`;
+    if (elements.previewRef) elements.previewRef.textContent = `ID: ${payload.application_id}`;
+    
+    const poll = setInterval(async () => {
+      try {
+        const status = await request(`/api/admin/certificates/${payload.application_id}/status`);
+        if (status.status === 'completed') {
+          clearInterval(poll);
+          if (status.certificate?.html) elements.previewFrame.srcdoc = status.certificate.html;
+          else elements.previewFrame.srcdoc = `<html><body style="padding:4rem; text-align:center; font-family:sans-serif;"><h1>Ready</h1><p>Manual PDF stream available in certificate log.</p></body></html>`;
+          if (elements.printButton) elements.printButton.disabled = false;
+        } else if (status.status === 'failed') {
+          clearInterval(poll);
+          showFlash("Generation Protocol Failed.", "error");
+        }
+      } catch (e) { clearInterval(poll); }
+    }, 4000);
+  } catch(err) { showFlash(err.message, "error"); }
 }
 
-async function handleCompanySubmit(event) {
-  event.preventDefault()
-  const payload = Object.fromEntries(new FormData(elements.companyForm).entries())
-  await request("/api/admin/companies", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  elements.companyForm.reset()
-  showFlash("Company saved.", "success")
-  await loadBootstrap()
+function syncDesignerPreview() {
+  const html = elements.smartTemplateHtml.value;
+  if (!html || !elements.designerFrame) return;
+  const preview = html.replace(/\{\{student_name\}\}/g, "John Doe").replace(/\{\{reg_no\}\}/g, "2401-PRST-V").replace(/\{\{branch_name\}\}/g, "Computer Science");
+  elements.designerFrame.srcdoc = `<html><body style="font-family:sans-serif; padding:1rem;">${preview}</body></html>`;
 }
 
-async function handleTemplateSubmit(event) {
-  event.preventDefault()
-  const formData = new FormData(elements.templateForm)
-  const payload = Object.fromEntries(formData.entries())
-  payload.active = formData.get("active") === "on"
+function setupEventListeners() {
+  elements.loginForm?.addEventListener("submit", handleLogin);
+  elements.logoutButton?.addEventListener("click", () => request("/api/admin/logout", { method: "POST" }).then(() => toggleAuthenticated(false)));
+  elements.refreshButton?.addEventListener("click", () => loadBootstrap().then(() => showFlash("Terminal Synced.")));
+  
+  elements.requestsBody?.addEventListener("click", handleAction);
+  elements.googleUsersBody?.addEventListener("click", handleAction);
+  elements.branchList?.addEventListener("click", handleAction);
+  elements.sessionList?.addEventListener("click", handleAction);
+  elements.companyList?.addEventListener("click", handleAction);
+  elements.branchContactList?.addEventListener("click", handleAction);
+  
+  elements.generatorForm?.addEventListener("submit", handleGenerate);
+  elements.filterStatus?.addEventListener("change", renderInbox);
+  elements.filterBranchApplications?.addEventListener("change", renderInbox);
+  elements.filterSearch?.addEventListener("input", renderInbox);
+  
+  elements.selectAll?.addEventListener("change", (e) => {
+    document.querySelectorAll(".bulk-check").forEach(cb => cb.checked = e.target.checked);
+  });
 
-  if (!String(payload.content || "").trim()) {
-    payload.content = baseTemplateContent(payload.type)
-  }
+  elements.bulkAction?.addEventListener("change", async (e) => {
+    const action = e.target.value;
+    if (!action) return;
+    const ids = Array.from(document.querySelectorAll(".bulk-check:checked")).map(cb => cb.value);
+    if (!ids.length) { showFlash("Queue selection empty.", "warning"); e.target.value = ""; return; }
+    if (confirm(`Execute batch ${action} for ${ids.length} records?`)) {
+        for (const id of ids) await request(`/api/admin/applications/${id}`, { method: "PUT", body: JSON.stringify({ status: action === 'approve' ? 'approved' : 'rejected' }) });
+        showFlash(`Batch ${action} Sequence Finalized.`, "success");
+        await loadBootstrap();
+    }
+    e.target.value = "";
+  });
 
-  await request("/api/admin/templates", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  elements.templateForm.reset()
-  elements.templateType.value = "Internship"
-  syncTemplateDraft(true)
-  showFlash("Template saved.", "success")
-  await loadBootstrap()
+  document.querySelectorAll(".nav-link").forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const sId = link.dataset.section;
+      document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+      link.classList.add("active");
+      document.querySelectorAll(".view-section").forEach(s => s.classList.add("hidden"));
+      if (sId === "all") document.querySelectorAll(".view-section").forEach(s => s.classList.remove("hidden"));
+      else document.querySelector(`#${sId}`)?.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  // Master Forms
+  elements.branchForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const p = Object.fromEntries(new FormData(e.target).entries());
+    await request("/api/admin/branches", { method: "POST", body: JSON.stringify(p) });
+    showFlash("Branch Protocols Updated.", "success");
+    e.target.reset(); await loadBootstrap();
+  });
+  elements.sessionForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const p = Object.fromEntries(new FormData(e.target).entries());
+    p.active = e.target.querySelector('[name="active"]').checked;
+    await request("/api/admin/sessions", { method: "POST", body: JSON.stringify(p) });
+    showFlash("Session Directory Updated.", "success");
+    e.target.reset(); await loadBootstrap();
+  });
+  elements.companyForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const p = Object.fromEntries(new FormData(e.target).entries());
+    await request("/api/admin/companies", { method: "POST", body: JSON.stringify(p) });
+    showFlash("Organization Profile Created.", "success");
+    e.target.reset(); await loadBootstrap();
+  });
+
+  // Designer
+  elements.btnExtractFields?.addEventListener("click", () => {
+    const html = elements.smartTemplateHtml.value;
+    const matches = [...html.matchAll(/\{\{([a-zA-Z0-9_| ]+)\}\}/g)].map(m => m[1].split('|')[0].trim());
+    const standard = ['student_name', 'reg_no', 'branch_name', 'branch_code', 'company_name', 'company_hr_title', 'company_address', 'duration', 'start_date', 'year', 'session', 'academic_session', 'ref_no'];
+    
+    extractedPlaceholders = [...new Set(matches)].filter(p => !standard.includes(p));
+    
+    elements.smartFieldsContainer.classList.remove("hidden");
+    elements.btnSaveSmartTemplate.classList.remove("hidden");
+
+    if (extractedPlaceholders.length === 0) {
+      elements.extractedFieldsList.innerHTML = `
+        <div class="alert success" style="margin-top: 1rem;">
+          <i class="fas fa-check-double"></i> Verified blueprint. No custom data inputs required.
+        </div>`;
+    } else {
+      elements.extractedFieldsList.innerHTML = extractedPlaceholders.map(p => `
+        <div class="card p-3 mb-3 border-glass field-builder" data-field="${p}" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+          <div><span class="badge" style="background: var(--accent); color: white;">{{${p}}}</span></div>
+          <label class="small-label">
+             Public Label
+             <input type="text" class="field-label" value="${p.replace(/_/g, ' ').toUpperCase()}" placeholder="Student face label" />
+          </label>
+          <label class="small-label">
+             Protocol Type
+             <select class="field-type">
+               <option value="text">Short Input</option>
+               <option value="textarea">Paragraph</option>
+               <option value="date">Date</option>
+               <option value="number">Numeric</option>
+               <option value="dropdown">Dropdown List</option>
+             </select>
+          </label>
+          <label class="small-label mt-2" style="grid-column: span 3;">
+             Dropdown Source (comma-sep) or Field Hint
+             <input type="text" class="field-hint" placeholder="Value A, Value B OR Tell student what to enter" />
+          </label>
+        </div>
+      `).join('');
+    }
+    syncDesignerPreview();
+  });
+
+  elements.btnSaveSmartTemplate?.addEventListener("click", async () => {
+    const fieldBlocks = document.querySelectorAll(".field-builder");
+    const formFields = Array.from(fieldBlocks).map(block => {
+        const name = block.dataset.field;
+        const type = block.querySelector(".field-type").value;
+        const hintVal = block.querySelector(".field-hint").value;
+        return {
+            name,
+            label: block.querySelector(".field-label").value,
+            type,
+            required: true,
+            hint: type === 'dropdown' ? '' : hintVal,
+            options: type === 'dropdown' ? hintVal.split(',').map(s => s.trim()) : undefined
+        };
+    });
+
+    const payload = {
+      name: elements.smartTemplateName.value,
+      type: elements.smartTemplateType.value,
+      template_json: JSON.stringify({
+        name: elements.smartTemplateName.value,
+        format_html: elements.smartTemplateHtml.value,
+        form_fields: formFields
+      }),
+      active: true
+    };
+    
+    try {
+      await request("/api/admin/templates-v2", { method: "POST", body: JSON.stringify(payload) });
+      showFlash("Institutional Blueprint Saved.", "success");
+      await loadBootstrap();
+    } catch (e) { showFlash(e.message, "error"); }
+  });
+  elements.smartTemplateHtml?.addEventListener("input", syncDesignerPreview);
+  
+  elements.printButton?.addEventListener("click", () => {
+     const w = elements.previewFrame.contentWindow;
+     if (w) { w.focus(); w.print(); }
+  });
+
+  document.querySelector("#migrate-system")?.addEventListener("click", async () => {
+     if (confirm("Migrate legacy student requests to the new applications system?")) {
+         await request("/api/admin/system/migrate", { method: "POST" });
+         showFlash("Migration Success.", "success");
+         await loadBootstrap();
+     }
+  });
 }
 
-async function handleGenerate(event) {
-  event.preventDefault()
-  const payload = {
-    studentId: elements.generatorStudent.value,
-    templateId: elements.generatorTemplate.value,
-    issuedOn: elements.generatorIssuedOn.value || undefined
-  }
-  const result = await request("/api/admin/certificates/generate", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  elements.previewFrame.srcdoc = result.html
-  elements.previewRef.textContent = `${result.refNo} | Academic Year ${result.academicYear}`
-  elements.printButton.disabled = false
-  showFlash(`Certificate generated: ${result.refNo}`, "success")
-  await loadBootstrap()
-}
-
-function printPreview() {
-  const frameWindow = elements.previewFrame.contentWindow
-  if (!frameWindow) {
-    showFlash("Generate a preview first.", "error")
-    return
-  }
-  frameWindow.focus()
-  frameWindow.print()
-}
-
-elements.loginForm.addEventListener("submit", (event) =>
-  handleLogin(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.logoutButton.addEventListener("click", () =>
-  handleLogout().catch((error) => showFlash(error.message, "error"))
-)
-elements.refreshButton.addEventListener("click", () =>
-  loadBootstrap()
-    .then(() => showFlash("Dashboard refreshed.", "info"))
-    .catch((error) => showFlash(error.message, "error"))
-)
-elements.requestsBody.addEventListener("click", (event) =>
-  handleRequestAction(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.googleUsersBody.addEventListener("click", (event) =>
-  handleGoogleUserAction(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.branchList.addEventListener("click", (event) =>
-  handleListAction(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.sessionList.addEventListener("click", (event) =>
-  handleListAction(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.durationList.addEventListener("click", (event) =>
-  handleListAction(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.companyList.addEventListener("click", (event) =>
-  handleListAction(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.branchForm.addEventListener("submit", (event) =>
-  handleBranchSubmit(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.sessionForm.addEventListener("submit", (event) =>
-  handleSessionSubmit(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.durationForm.addEventListener("submit", (event) =>
-  handleDurationSubmit(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.companyForm.addEventListener("submit", (event) =>
-  handleCompanySubmit(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.templateForm.addEventListener("submit", (event) =>
-  handleTemplateSubmit(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.generatorForm.addEventListener("submit", (event) =>
-  handleGenerate(event).catch((error) => showFlash(error.message, "error"))
-)
-elements.generatorStudent.addEventListener("change", () =>
-  populateGenerator(elements.generatorStudent.value)
-)
-elements.prefillTemplate.addEventListener("click", () => syncTemplateDraft(true))
-elements.templateType.addEventListener("change", () => syncTemplateDraft(false))
-elements.printButton.addEventListener("click", printPreview)
-
-elements.generatorIssuedOn.value = new Date().toISOString().slice(0, 10)
-
-Promise.all([loadGoogleLogin(), checkSession()]).catch((error) => showFlash(error.message, "error"))
+document.addEventListener("DOMContentLoaded", () => {
+  initializeElements();
+  setupEventListeners();
+  checkSession().catch(() => {});
+  if (elements.generatorIssuedOn) elements.generatorIssuedOn.value = new Date().toISOString().split('T')[0];
+});

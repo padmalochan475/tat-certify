@@ -1,0 +1,147 @@
+{
+  "id": "00000000-0000-0000-0000-000000000006",
+  "name": "TAT Apprenticeship Letter (Without Header - For Letterhead)",
+  "type": "Apprenticeship",
+  "version": 1,
+  "active": true,
+  "header_mode": "without_header",
+  "qr_settings": {
+    "enabled": true,
+    "position": "bottom-right",
+    "size": 100
+  },
+  "sections": {
+    "header": {
+      "enabled": false,
+      "logo_url": "",
+      "title": ""
+    },
+    "meta": {
+      "ref_no": "Ref. No. TAT/{{branch_code}}/{{serial}}/{{year}}",
+      "date": "Date: {{issue_date}}"
+    },
+    "receiver": {
+      "to": "{{company_hr_title}}",
+      "company": "{{company_name}}",
+      "address": "{{company_address}}"
+    },
+    "subject": {
+      "text": "Subject: Application for Apprenticeship Opportunity"
+    },
+    "body": {
+      "paragraphs": [
+        "Dear Sir/Madam,",
+        "I am reaching out to formally request an apprenticeship opportunity on behalf of {{student_name}}, a dedicated {{year}} B. Tech student majoring in {{branch_name}}. {{student_name}} is currently enrolled in the academic session {{session}} at Trident Academy of Technology, Bhubaneswar, and holds registration number {{reg_no}}.",
+        "Trident Academy of Technology is proud to be affiliated with Biju Patnaik University of Technology, Rourkela, Odisha, and accredited by the All India Council of Technical Education (AICTE), New Delhi.",
+        "We kindly ask for your consideration in allowing {{student_name}} to apply for an apprenticeship within your esteemed organization. The proposed duration for this apprenticeship is approximately {{duration}}, starting from {{start_date}}.",
+        "We firmly believe that an apprenticeship opportunity at your organization would offer {{student_name}} invaluable hands-on experience, perfectly aligning with academic pursuits and future career aspirations. This apprenticeship is part of the academic curriculum and will contribute significantly to the student's professional development.",
+        "Thank you sincerely for reviewing our request."
+      ],
+      "conditions": []
+    },
+    "signature": {
+      "name": "{{hod_name}}",
+      "designation": "{{hod_designation}}, {{branch_name}}",
+      "email": "{{hod_email}}",
+      "mobile": "{{hod_mobile}}"
+    },
+    "footer": {
+      "enabled": false,
+      "text": ""
+    }
+  },
+  "placeholders": [
+    "student_name",
+    "reg_no",
+    "branch_name",
+    "branch_code",
+    "session",
+    "year",
+    "company_name",
+    "company_hr_title",
+    "company_address",
+    "duration",
+    "start_date",
+    "hod_name",
+    "hod_designation",
+    "hod_email",
+    "hod_mobile",
+    "serial",
+    "issue_date"
+  ],
+  "form_fields": [
+    {
+      "name": "student_name",
+      "type": "text",
+      "label": "Full Name",
+      "required": true,
+      "validation": "min:3,max:120"
+    },
+    {
+      "name": "reg_no",
+      "type": "text",
+      "label": "Registration Number",
+      "required": true,
+      "validation": "min:3,max:30"
+    },
+    {
+      "name": "branch",
+      "type": "dropdown",
+      "label": "Branch",
+      "required": true,
+      "source": "branches"
+    },
+    {
+      "name": "year",
+      "type": "dropdown",
+      "label": "Year",
+      "required": true,
+      "source": "years"
+    },
+    {
+      "name": "session",
+      "type": "dropdown",
+      "label": "Academic Session",
+      "required": true,
+      "source": "sessions"
+    },
+    {
+      "name": "company",
+      "type": "dropdown_with_other",
+      "label": "Company",
+      "required": true,
+      "source": "companies"
+    },
+    {
+      "name": "company_hr_title",
+      "type": "text",
+      "label": "HR Title",
+      "required": true,
+      "validation": "min:2,max:120"
+    },
+    {
+      "name": "company_address",
+      "type": "textarea",
+      "label": "Company Address",
+      "required": true,
+      "validation": "min:8,max:500"
+    },
+    {
+      "name": "duration",
+      "type": "dropdown",
+      "label": "Duration",
+      "required": true,
+      "source": "durations",
+      "filter_by": "Apprenticeship"
+    },
+    {
+      "name": "start_date",
+      "type": "date",
+      "label": "Start Date",
+      "required": true
+    }
+  ],
+  "created_at": "2026-03-20T10:00:00Z",
+  "updated_at": "2026-03-20T10:00:00Z",
+  "created_by": "system@tat.ac.in"
+}

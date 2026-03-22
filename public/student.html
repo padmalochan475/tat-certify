@@ -3,119 +3,71 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Student Form | TAT Certificate System</title>
+    <title>Student Request | TAT</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
-    <div class="shell">
+    <div class="shell" style="max-width: 1400px;">
       <header class="topbar" data-reveal>
         <a class="brand" href="/">
-          <span class="brand-mark">TAT</span>
-          <span class="brand-copy">
-            <strong>Certificate System</strong>
-            <small>Trident Academy of Technology</small>
-          </span>
+          <div class="brand-mark">TAT</div>
+          <div class="brand-copy">
+            <strong>Student Records</strong>
+            <small>New Application</small>
+          </div>
         </a>
-
         <nav class="topnav">
-          <a href="/student" class="active">Student Form</a>
-          <a href="/admin">Admin Login</a>
+          <a href="/" class="nav-link">Home Portal</a>
         </nav>
       </header>
 
-      <section class="hero page-hero student-hero" data-reveal>
-        <div class="hero-copy">
-          <p class="eyebrow">Student Submission Desk</p>
-          <h1>Submit a clean, approval-ready certificate request.</h1>
-          <p class="hero-text">
-            The form is structured so students can move quickly while still giving the admin office
-            complete data for review, approval, and certificate generation.
-          </p>
-          <div class="hero-actions">
-            <span class="chip accent">Structured intake</span>
-            <span class="chip">Company directory aware</span>
-            <span class="chip">Approval workflow ready</span>
-          </div>
-        </div>
-
-        <aside class="hero-panel">
-          <p class="section-tag">Submission Flow</p>
-          <div class="signal-stack">
-            <article class="signal-item">
-              <span class="signal-index">A</span>
-              <div>
-                <strong>Identity</strong>
-                <p>Student basics, branch, year, and active academic session.</p>
-              </div>
-            </article>
-            <article class="signal-item">
-              <span class="signal-index">B</span>
-              <div>
-                <strong>Certificate Scope</strong>
-                <p>Certificate type, admin-defined duration, and required start date.</p>
-              </div>
-            </article>
-            <article class="signal-item">
-              <span class="signal-index">C</span>
-              <div>
-                <strong>Organization Details</strong>
-                <p>Use the approved company directory or enter a new company manually.</p>
-              </div>
-            </article>
-          </div>
-        </aside>
-      </section>
-
       <div id="student-flash" class="flash" hidden></div>
 
-      <main class="page-grid student-layout">
+      <main class="page-grid student-layout" style="margin-top: 5rem;">
         <section class="card form-card" data-reveal>
           <div class="card-head">
-            <div class="card-copy">
-              <p class="section-tag">Request Form</p>
-              <h2>Certificate Request Form</h2>
-              <p class="card-text">
-                Complete all sections once. If the company is already approved, select it from the
-                directory and the HR details will be applied automatically.
-              </p>
-            </div>
-            <span class="chip">Student view</span>
+            <span class="section-tag" style="color: var(--accent);">Student Intake</span>
+            <h2>Certificate Request</h2>
+            <p class="muted">Please provide your approved academic and training details for verification.</p>
           </div>
 
           <form id="student-form" class="form-shell">
             <section class="form-section">
-              <div class="section-head">
-                <p class="section-tag">Section 01</p>
-                <h3>Student identity</h3>
-                <p>Capture the academic record exactly as it should appear for admin review.</p>
+              <div class="section-head" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                <div class="badge" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 1rem; background: rgba(59, 130, 246, 0.2); border: 1px solid var(--accent);">1</div>
+                <div>
+                    <h3 style="color: white; font-size: 1.25rem;">Student Identity</h3>
+                    <p class="small muted">Confirm registration and academic branch.</p>
+                </div>
               </div>
 
               <div class="form-grid">
                 <label>
-                  Full name
-                  <input name="full_name" type="text" placeholder="Priyanshu Ranjan Das" required />
+                  Full Student Name
+                  <input name="full_name" type="text" placeholder="As per official college records" minlength="3" required />
                 </label>
 
                 <label>
-                  Registration number
-                  <input name="reg_no" type="text" placeholder="2301289277" required />
+                  Registration Number
+                  <input name="reg_no" type="text" placeholder="10-digit ID" pattern="[0-9]{10}" title="Please enter exactly 10 digits" required />
                 </label>
 
                 <label>
-                  Branch
+                  Academic Department
                   <select id="student-branch" name="branch" required></select>
                 </label>
 
                 <label>
-                  Year
+                  Current Semester/Year
                   <select name="year" required>
-                    <option value="">Select year</option>
+                    <option value="">Choose your year</option>
                     <option value="1st Year">1st Year</option>
                     <option value="2nd Year">2nd Year</option>
                     <option value="3rd Year">3rd Year</option>
@@ -124,144 +76,144 @@
                 </label>
 
                 <label class="full-span">
-                  Academic session
+                  Academic Session Period
                   <select id="student-session" name="session" required></select>
                 </label>
               </div>
             </section>
 
             <section class="form-section">
-              <div class="section-head">
-                <p class="section-tag">Section 02</p>
-                <h3>Certificate scope</h3>
-                <p>Choose the opportunity type and the duration options controlled by the admin office.</p>
+              <div class="section-head" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                 <div class="badge" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 1rem; background: rgba(59, 130, 246, 0.2); border: 1px solid var(--accent);">2</div>
+                 <div>
+                    <h3 style="color: white; font-size: 1.25rem;">Training Details</h3>
+                    <p class="small muted">Specify the type and timeframe of the training.</p>
+                 </div>
               </div>
 
               <div class="form-grid">
                 <label>
-                  Certificate type
+                  Type of Opportunity
                   <select id="student-cert-type" name="cert_type" required>
-                    <option value="Internship">Internship</option>
-                    <option value="Apprenticeship">Apprenticeship</option>
+                    <option value="Internship">Internship Training</option>
+                    <option value="Apprenticeship">Apprenticeship Program</option>
                   </select>
                 </label>
 
-                <label>
-                  Duration
+                <label id="container-duration">
+                  Approved Timeframe
                   <select id="student-duration" name="duration" required></select>
                 </label>
 
-                <label class="full-span">
-                  Start date
-                  <input name="start_date" type="date" required />
+                <label id="container-start-date" class="full-span">
+                  Commencement Date
+                  <input name="start_date" type="date" required style="color-scheme: dark;" />
+                </label>
+
+                <label id="template-container" class="full-span hidden">
+                  Institutional Template Style
+                  <select id="student-template" name="template_id">
+                    <option value="">Select format</option>
+                  </select>
                 </label>
               </div>
             </section>
 
-            <section class="form-section">
-              <div class="section-head">
-                <p class="section-tag">Section 03</p>
-                <h3>Organization details</h3>
-                <p>
-                  Select a company from the approved directory where possible. Use manual entry only
-                  when the company is not available yet.
-                </p>
+            <section id="dynamic-form-section" class="form-section hidden">
+              <div class="section-head" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                  <div class="badge" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 1rem; background: rgba(59, 130, 246, 0.2); border: 1px solid var(--accent);">N</div>
+                  <div>
+                    <h3 style="color: white; font-size: 1.25rem;">Dynamic Requirements</h3>
+                    <p class="small muted">Please provide the additional specifics required for this certificate.</p>
+                  </div>
+              </div>
+              <div id="dynamic-fields-container" class="form-grid"></div>
+            </section>
+
+            <section id="section-host-org" class="form-section">
+              <div class="section-head" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                 <div class="badge" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 1rem; background: rgba(59, 130, 246, 0.2); border: 1px solid var(--accent);">3</div>
+                 <div>
+                    <h3 style="color: white; font-size: 1.25rem;">Host Organization Info</h3>
+                    <p class="small muted">Search for existing organizations or add a new record.</p>
+                 </div>
               </div>
 
               <div class="form-grid">
                 <label class="full-span">
-                  Company directory
+                  Registered Organization Directory
                   <select id="student-company-directory">
-                    <option value="">Select from approved companies</option>
-                    <option value="__manual__">Other / New Company</option>
+                    <option value="">Find organization...</option>
+                    <option value="__manual__">+ Create New Record</option>
                   </select>
                 </label>
 
                 <label>
-                  Company name
-                  <input
-                    id="student-company-name"
-                    name="company"
-                    type="text"
-                    placeholder="TPCODL"
-                    required
-                  />
+                  Organization Legal Name
+                  <input id="student-company-name" name="company" type="text" required />
                 </label>
 
                 <label>
-                  HR title
-                  <input
-                    id="student-company-hr"
-                    name="company_hr_title"
-                    type="text"
-                    placeholder="Head HR"
-                    required
-                  />
+                  Authorized Signatory Title (HR/HOD)
+                  <input id="student-company-hr" name="company_hr_title" type="text" required />
                 </label>
 
                 <label class="full-span">
-                  Company HR address
-                  <textarea
-                    id="student-company-address"
-                    name="company_address"
-                    rows="4"
-                    placeholder="Corporate Office&#10;Power House Square&#10;Bhubaneswar"
-                    required
-                  ></textarea>
+                  Official Communication Address
+                  <textarea id="student-company-address" name="company_address" rows="3" required></textarea>
                 </label>
               </div>
             </section>
 
-            <div class="submit-bar">
-              <div>
-                <strong>Ready to submit</strong>
-                <p class="muted">
-                  The request will enter the admin review queue immediately after submission.
-                </p>
-              </div>
-              <div class="form-actions">
-                <button type="submit" class="button primary">Submit Request</button>
-              </div>
+            <div class="submit-bar" style="border-top: 1px solid var(--glass-border); padding-top: 3rem;">
+              <button type="submit" class="button primary" style="width: 100%; justify-content: center; height: 64px; font-size: 1.1rem; border-radius: 999px;">
+                <i class="fas fa-paper-plane mr-10"></i> Submit Request
+              </button>
             </div>
           </form>
         </section>
 
         <aside class="side-stack">
-          <section class="card side-card" data-reveal>
+          <section id="status-tracker" class="card status-card hidden" data-reveal>
             <div class="card-head">
-              <div class="card-copy">
-                <p class="section-tag">Directory Preview</p>
-                <h2>Company details</h2>
-              </div>
+              <span class="section-tag">Status</span>
+              <h2>Tracking Status</h2>
+              <p id="status-update-text" class="card-text small muted">Connecting to securely retrieve academic status...</p>
+              <span id="status-badge" class="badge mt-10" style="display: inline-block;">Awaiting</span>
+            </div>
+            
+            <div class="status-progress-container">
+              <div id="status-progress-bar" class="progress-bar"></div>
             </div>
 
-            <div id="company-preview" class="preview-card">
-              <p class="muted">Select a company to preview its HR title and address here.</p>
+            <div id="status-details" class="status-details hidden"></div>
+
+            <div id="certificate-actions" class="certificate-actions hidden">
+              <button id="download-certificate" class="button primary full-width" style="border-radius: 999px;">
+                 <i class="fas fa-download" style="margin-right: 8px;"></i> Download PDF
+              </button>
             </div>
           </section>
 
-          <section class="card info-card" data-reveal>
-            <p class="section-tag">Submission Notes</p>
-            <h2>What happens next</h2>
-            <ul class="feature-list compact">
-              <li>Your request enters the admin review queue.</li>
-              <li>Approved requests can be used to generate the final certificate.</li>
-              <li>Approved new company details become reusable for future students.</li>
-              <li>Only admin-controlled duration, HOD, template, and issue-date data are used.</li>
-            </ul>
-          </section>
+          <div class="card" data-reveal style="padding: 2.5rem; border: 1px solid rgba(255,255,255,0.05);">
+             <h3 style="color: white; font-size: 1.1rem; margin-bottom: 1rem;">Verification Rules</h3>
+             <ul class="muted small" style="list-style: none; padding: 0; display: grid; gap: 1rem;">
+               <li><i class="fas fa-check-circle mr-10" style="color: var(--accent);"></i> Secure verification by your assigned department.</li>
+               <li><i class="fas fa-check-circle mr-10" style="color: var(--accent);"></i> Automated processing against academic requirements.</li>
+               <li><i class="fas fa-check-circle mr-10" style="color: var(--accent);"></i> Requests are typically evaluated within 48 hours.</li>
+             </ul>
+          </div>
 
-          <section class="card info-card" data-reveal>
-            <p class="section-tag">Form Standard</p>
-            <h2>How to keep approval fast</h2>
-            <ul class="feature-list compact">
-              <li>Use the exact registration number and academic session.</li>
-              <li>Prefer the approved company directory when available.</li>
-              <li>Enter HR title and address in official format for new companies.</li>
-            </ul>
-          </section>
+           <div id="company-preview" class="card mt-10" data-reveal style="padding: 2.5rem; border: 1px solid rgba(255,255,255,0.05); color: white;">
+              <!-- Javascript populates this -->
+           </div>
+
         </aside>
       </main>
+
+      <footer style="margin-top: 6rem; padding: 4rem 0; text-align: center; border-top: 1px solid rgba(255,255,255,0.05);">
+        <p class="small muted">&copy; 2024 Trident Academy of Technology. Secure Portal System.</p>
+      </footer>
     </div>
 
     <script type="module" src="/site.js"></script>

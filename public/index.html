@@ -3,145 +3,110 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TAT Certificate System</title>
+    <title>TAT | Certificate Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
-    <div class="shell">
-      <header class="topbar" data-reveal>
-        <a class="brand" href="/">
-          <span class="brand-mark">TAT</span>
-          <span class="brand-copy">
-            <strong>Certificate System</strong>
-            <small>Trident Academy of Technology</small>
-          </span>
-        </a>
-
-        <nav class="topnav">
-          <a href="/student">Student Form</a>
-          <a href="/admin">Admin Login</a>
-        </nav>
+    <div class="shell" style="max-width: 900px; margin-top: 8vh;">
+      <header style="text-align: center; margin-bottom: 4rem;" data-reveal>
+        <div style="width: 80px; height: 80px; background: rgba(59, 130, 246, 0.2); border: 2px solid var(--accent); border-radius: 50%; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);">
+          T
+        </div>
+        <h1 style="font-family: var(--font-display); font-size: 2.2rem; margin: 0; color: white; letter-spacing: -0.5px;">Trident Academy of Technology</h1>
+        <p class="muted" style="font-size: 1.1rem; margin-top: 0.5rem;">Official Academic & Professional Certification Portal</p>
       </header>
 
-      <section class="hero landing-hero" data-reveal>
-        <div class="hero-copy">
-          <p class="eyebrow">Institutional Workflow Platform</p>
-          <h1>Precision-built certificate operations for a modern academic office.</h1>
-          <p class="hero-text">
-            One controlled environment for student submissions, branch-level serial logic, company
-            records, approval workflows, Google-restricted admin access, and one-page certificate
-            output ready for official letterhead.
-          </p>
-
-          <div class="hero-actions">
-            <a class="button primary" href="/student">Start Student Request</a>
-            <a class="button ghost" href="/admin">Open Admin Workspace</a>
-          </div>
-
-          <div class="hero-stat-row">
-            <article class="metric-card">
-              <span class="metric-value">Dynamic</span>
-              <p>Templates, durations, HOD details, and companies stay admin-managed.</p>
-            </article>
-            <article class="metric-card">
-              <span class="metric-value">Tracked</span>
-              <p>Reference generation, approvals, removals, and certificate logs stay auditable.</p>
-            </article>
-            <article class="metric-card">
-              <span class="metric-value">Ready</span>
-              <p>Built for GitHub, Cloudflare Pages, and D1 with a production-minded structure.</p>
-            </article>
-          </div>
+      <main data-reveal style="display: grid; gap: 2rem; background: var(--glass); border: 1px solid var(--glass-border); padding: 3rem; border-radius: var(--radius-lg); backdrop-filter: blur(var(--blur)); box-shadow: var(--shadow-xl);">
+        
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: white;">Welcome to the Student Central</h2>
+          <p class="muted small">Please select your required action below to proceed with your certification process.</p>
         </div>
 
-        <aside class="hero-panel">
-          <p class="section-tag">Operational Spine</p>
-          <h2>Internal workflow, external polish.</h2>
-          <div class="signal-stack">
-            <article class="signal-item">
-              <span class="signal-index">01</span>
-              <div>
-                <strong>Student Intake</strong>
-                <p>Clean guided submission with approved company reuse and manual fallback.</p>
-              </div>
-            </article>
-            <article class="signal-item">
-              <span class="signal-index">02</span>
-              <div>
-                <strong>Admin Control</strong>
-                <p>Approve, reject, manage sessions, branches, HOD records, templates, and logs.</p>
-              </div>
-            </article>
-            <article class="signal-item">
-              <span class="signal-index">03</span>
-              <div>
-                <strong>Print Output</strong>
-                <p>One-page certificate composition aligned to your institutional letterhead.</p>
-              </div>
-            </article>
-          </div>
-        </aside>
-      </section>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <!-- Request Card -->
+          <a href="/student" class="hover-card" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; padding: 2.5rem 1rem; border: 1px solid rgba(59, 130, 246, 0.4); border-radius: var(--radius-md); background: rgba(59, 130, 246, 0.05); transition: all 0.3s;">
+            <i class="fas fa-file-signature" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
+            <h3 style="margin: 0 0 0.5rem 0; color: white;">New Application</h3>
+            <p class="small muted" style="text-align: center; margin: 0;">Submit a request for your completion certificate.</p>
+          </a>
 
-      <section class="workflow-strip" data-reveal>
-        <article class="workflow-card">
-          <span>Submit</span>
-          <p>Students enter request details with department, session, type, company, and duration.</p>
-        </article>
-        <article class="workflow-card">
-          <span>Review</span>
-          <p>Admins evaluate requests, remove invalid ones, and approve valid submissions.</p>
-        </article>
-        <article class="workflow-card">
-          <span>Generate</span>
-          <p>Reference numbers, templates, issue date, and print preview stay centrally controlled.</p>
-        </article>
-        <article class="workflow-card">
-          <span>Audit</span>
-          <p>Every generation and admin action remains visible in the operational record.</p>
-        </article>
-      </section>
+          <!-- Admin Card -->
+          <a href="/admin" class="hover-card" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; padding: 2.5rem 1rem; border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: var(--radius-md); background: rgba(0, 0, 0, 0.2); transition: all 0.3s;">
+            <i class="fas fa-shield-alt" style="font-size: 2.5rem; color: #94a3b8; margin-bottom: 1rem;"></i>
+            <h3 style="margin: 0 0 0.5rem 0; color: white;">Department Login</h3>
+            <p class="small muted" style="text-align: center; margin: 0;">Authorized access for credential verification.</p>
+          </a>
+        </div>
+        
+        <!-- Live Tracker -->
+        <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+           <p class="small muted text-center" style="margin-bottom: 1.5rem;">Already applied? Track your progression status directly.</p>
+           
+           <form id="track-form" style="display: flex; gap: 1rem; max-width: 500px; margin: 0 auto; align-items: stretch;">
+              <input type="text" id="track-id" placeholder="Application Reference ID..." required style="flex: 1; border-radius: 999px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); padding: 1rem 1.5rem; color: white; font-size: 1rem;" />
+              <button type="submit" class="button primary" style="border-radius: 999px; padding: 1rem 2rem; margin: 0; min-height: 100%;">
+                <i class="fas fa-search" style="margin-right: 8px;"></i> Access
+              </button>
+           </form>
 
-      <section class="link-grid" data-reveal>
-        <a class="link-card portal-card" href="/student">
-          <p class="section-tag">Student Portal</p>
-          <h2>Submit a request without friction</h2>
-          <p>
-            Guided form sections, company directory assistance, and structured inputs for a cleaner
-            admin review pipeline.
-          </p>
-          <span class="card-link">Open student form</span>
-        </a>
+           <div id="track-result" style="margin-top: 1.5rem; text-align: center; min-height: 40px; display: flex; align-items: center; justify-content: center; flex-direction: column;"></div>
+        </div>
 
-        <a class="link-card portal-card dark" href="/admin">
-          <p class="section-tag">Admin Workspace</p>
-          <h2>Run the certificate desk like an operations console</h2>
-          <p>
-            Handle approvals, data governance, template control, Google sign-in access, and print
-            generation from one internal dashboard.
-          </p>
-          <span class="card-link">Open admin workspace</span>
-        </a>
+      </main>
 
-        <section class="link-card insight-card">
-          <p class="section-tag">System Fit</p>
-          <h2>Built for organizational continuity</h2>
-          <ul class="feature-list">
-            <li>Department-wise serial progression with manual starting offsets</li>
-            <li>Reusable company intelligence captured from approved requests</li>
-            <li>Admin-only certificate generation with audit visibility</li>
-            <li>Cloud-hosted deployment path without paid infrastructure lock-in</li>
-          </ul>
-        </section>
-      </section>
+      <footer data-reveal style="margin-top: 4rem; text-align: center; opacity: 0; animation-delay: 0.4s;">
+        <p class="small muted">&copy; 2024 Trident Academy of Technology. Core Processing System.</p>
+      </footer>
     </div>
-
+    
+    <style>
+      .hover-card:hover {
+         transform: translateY(-5px);
+         background: rgba(59, 130, 246, 0.15) !important;
+         border-color: var(--accent) !important;
+         box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+      }
+    </style>
+    
+    <script type="module">
+      document.getElementById('track-form')?.addEventListener('submit', async (e) => {
+         e.preventDefault();
+         const id = document.getElementById('track-id').value.trim();
+         const resContainer = document.getElementById('track-result');
+         
+         resContainer.innerHTML = '<span class="muted small"><i class="fas fa-spinner fa-spin" style="margin-right: 8px; color: var(--accent);"></i> Accessing secure student records...</span>';
+         
+         try {
+            const response = await fetch(`/api/student/applications/${id}/status`);
+            if (!response.ok) {
+               throw new Error("No secure match found");
+            }
+            
+            const data = await response.json();
+            const statusLabel = data.status.toUpperCase();
+            
+            let colorTag = "background: rgba(59,130,246,0.2); border: 1px solid var(--accent);";
+            if (statusLabel === "COMPLETED") colorTag = "background: rgba(16,185,129,0.2); border: 1px solid var(--success); color: var(--success);";
+            if (statusLabel === "REJECTED") colorTag = "background: rgba(244,63,94,0.2); border: 1px solid var(--danger); color: var(--danger);";
+               
+            let statusMarkup = `<span class="badge" style="margin-top: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem; ${colorTag}">
+               Status: ${statusLabel}</span>`;
+               
+            if (data.certificate?.pdf_url) {
+               statusMarkup += `<br/><a href="${data.certificate.pdf_url}" target="_blank" class="button primary small" style="display: inline-flex;  border-radius: 999px; margin-top: 1.5rem;"><i class="fas fa-download mr-10"></i> Recover Generated Document</a>`;
+            }
+            
+            resContainer.innerHTML = statusMarkup;
+         } catch (err) {
+            resContainer.innerHTML = '<span style="color: var(--danger); font-size: 0.9rem; background: rgba(244,63,94,0.1); padding: 0.5rem 1rem; border-radius: var(--radius-sm); border: 1px solid rgba(244,63,94,0.3);"><i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i> Security Error: Invalid or unrecognized Application ID.</span>';
+         }
+      });
+    </script>
     <script type="module" src="/site.js"></script>
   </body>
 </html>
