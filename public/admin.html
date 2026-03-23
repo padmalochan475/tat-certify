@@ -42,6 +42,7 @@
           </div>
 
           <form id="login-form" class="form-shell">
+
             <label>
               Administrator ID
               <input name="username" type="text" placeholder="Official ID" required />
@@ -106,7 +107,7 @@
                </button>
              </div>
 
-              <div class="stats-row mb-4" id="stats-summary" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0 2rem 0;">
+              <div class="stats-row mb-4" id="stats-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin: 1.5rem 0 3rem 0;">
                 <div class="card p-3 border-glass">
                    <small class="muted uppercase ls-1">Validation Cache</small>
                    <h3 id="stat-pending" style="color: var(--accent); margin: 0.5rem 0;">0</h3>
@@ -204,9 +205,9 @@
                   <input name="name" placeholder="Full Branch Name" required />
                   <input name="current_serial" type="number" placeholder="Starting Serial" required />
                   <input name="serial_year" type="number" placeholder="Serial Year (e.g. 24)" required />
-                  <input name="hod_name" placeholder="HOD Name" required />
-                  <input name="hod_email" type="email" placeholder="HOD Email" required />
-                  <input name="hod_mobile" placeholder="HOD Contact" required />
+                  <input name="hod_name" placeholder="HOD Name" />
+                  <input name="hod_email" type="email" placeholder="HOD Email" />
+                  <input name="hod_mobile" placeholder="HOD Contact" />
                   <button type="submit" class="button primary small">Save Branch Record</button>
                 </form>
                 <div id="branch-list"></div>
@@ -387,6 +388,6 @@
     <!-- Google Identity API -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script type="module" src="/site.js"></script>
-    <script type="module" src="/admin.js"></script>
+    <script type="module" src="/admin_v2.js"></script>
   </body>
 </html>

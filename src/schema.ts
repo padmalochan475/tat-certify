@@ -172,14 +172,14 @@ export const branchInputSchema = z
   .object({
     code: z.string().trim().min(2).max(20),
     name: z.string().trim().min(2).max(120),
-    prefix: z.string().trim().min(2).max(10),
-    hod_name: z.string().trim().min(3).max(120),
-    hod_designation: z.string().trim().min(2).max(50).default("HOD"),
-    hod_email: z.email().max(120),
-    hod_mobile: z.string().trim().min(10).max(20),
+    prefix: z.string().trim().min(2).max(10).optional(),
+    hod_name: z.string().trim().min(3).max(120).optional(),
+    hod_designation: z.string().trim().min(2).max(50).default("HOD").optional(),
+    hod_email: z.string().email().max(120).optional().or(z.literal("")),
+    hod_mobile: z.string().trim().min(10).max(20).optional(),
     current_serial: z.number().int().min(0).optional(),
     serial_year: z.number().int().min(2000).max(2100).optional(),
-    active: z.boolean().default(true)
+    active: z.boolean().default(true).optional()
   })
   .strict();
 

@@ -236,7 +236,7 @@ async function handleAction(e) {
     } else if (action === "delete-contact") {
        if (confirm("Wipe registry contact?")) await request(`/api/admin/branch-contacts/${id}`, { method: "DELETE" });
     } else if (action === "approve-google") {
-       await request(`/api/admin/google-users/${id}/approve`, { method: "PATCH" });
+       await request(`/api/admin/google-users/${id}/approve`, { method: "POST" });
        showFlash("Google Workspace Access Granted.", "success");
     }
     await loadBootstrap();
@@ -278,6 +278,60 @@ function syncDesignerPreview() {
   if (!html || !elements.designerFrame) return;
   const preview = html.replace(/\{\{student_name\}\}/g, "John Doe").replace(/\{\{reg_no\}\}/g, "2401-PRST-V").replace(/\{\{branch_name\}\}/g, "Computer Science");
   elements.designerFrame.srcdoc = `<html><body style="font-family:sans-serif; padding:1rem;">${preview}</body></html>`;
+}
+
+async function loadGoogleLogin() {
+  if (!elements.googleLoginButton) return;
+  if (elements.googleLoginNote) elements.googleLoginNote.textContent = "Connecting to Workspace...";
+  
+  try {
+    const config = await request("/api/google-config");
+    if (!config.clientId) {
+      if (elements.googleLoginNote) elements.googleLoginNote.textContent = "Google Identity config not found in dashboard.";
+      return;
+    }
+    
+    if (!googleScriptPromise) {
+      googleScriptPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://accounts.google.com/gsi/client";
+        script.async = true;
+        script.defer = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.append(script);
+      });
+    }
+    await googleScriptPromise;
+
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.initialize({
+        client_id: config.clientId,
+        callback: handleGoogleCredential,
+        auto_select: false
+      });
+      
+      window.google.accounts.id.renderButton(elements.googleLoginButton, { 
+        theme: "filled_blue", size: "large", text: "continue_with", shape: "pill" 
+      });
+      
+      if (elements.googleLoginNote) {
+         elements.googleLoginNote.textContent = "Institutional Identity Active.";
+         elements.googleLoginNote.style.color = "var(--accent)";
+      }
+    }
+  } catch (err) { 
+    console.error("Identity Engine Error:", err); 
+    if (elements.googleLoginNote) elements.googleLoginNote.textContent = "Connection to Google Identity failed.";
+  }
+}
+
+async function handleGoogleCredential(response) {
+  try {
+    await request("/api/admin/google-login", { method: "POST", body: JSON.stringify({ credential: response.credential }) });
+    showFlash("Identity Verified. Accessing Hub...", "success");
+    toggleAuthenticated(true);
+  } catch (err) { showFlash(err.message, "error"); }
 }
 
 function setupEventListeners() {

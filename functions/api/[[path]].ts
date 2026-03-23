@@ -384,12 +384,26 @@ function pathSegments(value: string | string[] | undefined): string[] {
 }
 
 export const onRequest: PagesFunction<Env> = async (context) => {
-  await ensureDatabaseReady(context.env.DB);
-
-  const service = new TatCertificateService(context.env.DB);
   const { request } = context;
   const method = request.method.toUpperCase();
   const segments = pathSegments(context.params.path);
+
+  // Priority 0: Identity Engine (No DB needed)
+  if (method === "GET" && segments[0] === "google-config") {
+    return jsonResponse({ clientId: context.env.GOOGLE_CLIENT_ID });
+  }
+
+  // Priority 1: Data Pipeline Verification
+  if (!context.env.DB) {
+    return jsonResponse({ 
+      error: "Infrastructure Configuration Required", 
+      message: "Direct D1 Binding 'DB' is missing in your Cloudflare Dashboard for project 'tat-soc'. Please add the binding in Settings > Functions."
+    }, 500);
+  }
+
+  await ensureDatabaseReady(context.env.DB);
+
+  const service = new TatCertificateService(context.env.DB);
 
   try {
     if (segments[0] === "student") {
@@ -656,7 +670,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         return jsonResponse(await service.getAdminBootstrap());
       }
 
-      if (method === "PATCH" && segments[1] === "students" && segments[3] === "approve") {
+      if ((method === "PATCH" || method === "POST") && segments[1] === "students" && segments[3] === "approve") {
         const student = await service.approveStudent(segments[2] ?? "");
         await service.writeAuditLog(actor, "student.approve", "student", student.id, {
           regNo: student.reg_no
@@ -670,7 +684,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         return noContent();
       }
 
-      if (method === "PATCH" && segments[1] === "google-users" && segments[3] === "approve") {
+      if ((method === "PATCH" || method === "POST") && segments[1] === "google-users" && segments[3] === "approve") {
         const user = await service.approveAdminUser(segments[2] ?? "", actor.email);
         await service.writeAuditLog(actor, "admin_user.approve", "admin_user", user.id, {
           email: user.email

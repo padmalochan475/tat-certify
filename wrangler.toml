@@ -1,2 +1,16 @@
-name = "trident"
+name = "tat-soc"
 pages_build_output_dir = "public"
+
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tat-certificate-db"
+database_id = "922aeed2-2b33-491c-8dcc-fc3ab7b3ff34"
+
+[vars]
+GOOGLE_CLIENT_ID = "919562163166-529s0ovlb4hp7je5j5bev5lmg22j90vf.apps.googleusercontent.com"
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "password123"
+ADMIN_SECRET = "institutional_master_security_key_2026_soc"
+GOOGLE_ALLOWED_HD = "tat-soc"
